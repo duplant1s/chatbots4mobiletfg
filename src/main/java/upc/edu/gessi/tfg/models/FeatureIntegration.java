@@ -18,19 +18,19 @@ public class FeatureIntegration implements Serializable {
         this.targetFeature = targetFeature;
     }
 
-    public String getFeatureIntegration_id() {
+    public String getId() {
         return featureIntegration_id;
     }
 
-    public void setFeatureIntegration_id(String featureIntegration_id) {
+    public void setId(String featureIntegration_id) {
         this.featureIntegration_id = featureIntegration_id;
     }
 
-    public String getFeatureIntegration_name() {
+    public String getName() {
         return featureIntegration_name;
     }
 
-    public void setFeatureIntegration_name(String featureIntegration_name) {
+    public void setName(String featureIntegration_name) {
         this.featureIntegration_name = featureIntegration_name;
     }
 

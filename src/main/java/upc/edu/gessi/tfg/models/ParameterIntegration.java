@@ -20,19 +20,19 @@ public class ParameterIntegration implements Serializable {
         this.parameterIntegration_value = parameterIntegration_value;
     }
 
-    public String getParameterIntegration_id() {
+    public String getId() {
         return parameterIntegration_id;
     }
 
-    public void setParameterIntegration_id(String parameterIntegration_id) {
+    public void setId(String parameterIntegration_id) {
         this.parameterIntegration_id = parameterIntegration_id;
     }
 
-    public String getParameterIntegration_name() {
+    public String getName() {
         return parameterIntegration_name;
     }
 
-    public void setParameterIntegration_name(String parameterIntegration_name) {
+    public void setName(String parameterIntegration_name) {
         this.parameterIntegration_name = parameterIntegration_name;
     }
 
@@ -52,11 +52,11 @@ public class ParameterIntegration implements Serializable {
         this.targetParameter = targetParameter;
     }
 
-    public Object getParameterIntegration_value() {
+    public Object getValue() {
         return parameterIntegration_value;
     }
 
-    public void setParameterIntegration_value(Object parameterIntegration_value) {
+    public void setValue(Object parameterIntegration_value) {
         this.parameterIntegration_value = parameterIntegration_value;
     }
 

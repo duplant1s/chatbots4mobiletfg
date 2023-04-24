@@ -15,35 +15,35 @@ public class Parameter implements Serializable {
         this.parameter_value = parameter_value;
     }
 
-    public String getParameter_id() {
+    public String getIdentifier() {
         return parameter_id;
     }
 
-    public void setParameter_id(String parameter_id) {
+    public void setIdentifier(String parameter_id) {
         this.parameter_id = parameter_id;
     }
 
-    public String getParameter_name() {
+    public String getName() {
         return parameter_name;
     }
 
-    public void setParameter_name(String parameter_name) {
+    public void setName(String parameter_name) {
         this.parameter_name = parameter_name;
     }
 
-    public String getParameter_type() {
+    public String getType() {
         return parameter_type;
     }
 
-    public void setParameter_type(String parameter_type) {
+    public void setType(String parameter_type) {
         this.parameter_type = parameter_type;
     }
 
-    public Object getParameter_value() {
+    public Object getValue() {
         return parameter_value;
     }
 
-    public void setParameter_value(Object parameter_value) {
+    public void setValue(Object parameter_value) {
         this.parameter_value = parameter_value;
     }
     

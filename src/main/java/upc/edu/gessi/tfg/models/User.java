@@ -3,8 +3,13 @@ package upc.edu.gessi.tfg.models;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import org.springframework.data.neo4j.core.schema.Id;
+
 public class User implements Serializable {
-    private String identifier;
+    @Id
+    @GeneratedValue
+    private Long identifier;
     private String email;
     private String givenName;
     private String familyName;
@@ -12,11 +17,11 @@ public class User implements Serializable {
     private List<String> preferredFeatureIntegrations;
     private List<String> preferredParameterIntegrations;
 
-    public String getIdentifier() {
+    public Long getIdentifier() {
         return identifier;
     }
 
-    public void setIdentifier(String identifier) {
+    public void setIdentifier(Long identifier) {
         this.identifier = identifier;
     }
 

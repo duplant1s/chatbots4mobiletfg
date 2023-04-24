@@ -1,65 +1,74 @@
 package upc.edu.gessi.tfg.services;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import upc.edu.gessi.tfg.models.Feature;
 import upc.edu.gessi.tfg.models.FeatureIntegration;
-import upc.edu.gessi.tfg.repositories.GraphDBService;
+import upc.edu.gessi.tfg.repositories.FeatureIntegrationRepository;
+import upc.edu.gessi.tfg.repositories.FeatureRepository;
 
 @Service
 public class FeatureService {
 
-    @Autowired 
-    private GraphDBService graphDBService;
+    @Autowired
+    private FeatureRepository featureRepository;
 
-    //FEATURES
-    public Feature getFeatureById(long id) {
-        return graphDBService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Feature", "id", id));
+    @Autowired
+    private FeatureIntegrationRepository featureIntegrationRepository;
+
+    //FeatureS
+    public Iterable<Feature> getAllFeatures() {
+        return featureRepository.findAll();
+    }
+
+    public Optional<Feature> getFeatureById(long id) {
+        return featureRepository.findById(id);
     }
 
     public Feature createFeature(Feature feature) {
-        return graphDBService.save(feature);
+        return featureRepository.save(feature);
     }
 
     public Feature updateFeature(long id, Feature feature) {
-        Feature existingFeature = graphDBService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Feature", "id", id));
+        Feature existingFeature = featureRepository.findById(id).orElse(null);
+        if (existingFeature == null)
+            return null;
         existingFeature.setName(feature.getName());
-        existingFeature.setDescription(feature.getDescription());
-        return graphDBService.save(existingFeature);
+        existingFeature.setParameters(feature.getParameters());
+        return featureRepository.save(existingFeature);
     }
 
-    public Feature deleteFeature(long id) {
-        Feature existingFeature = graphDBService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Feature", "id", id));
-        graphDBService.delete(existingFeature);
-        return existingFeature;
+    public void deleteFeature(long id) {
+        featureIntegrationRepository.deleteById(id);
     }
 
-    //FEATURE_INTEGRATIONS
-    public FeatureIntegration getFeatureIntegrationById(long id) {
-        return graphDBService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FeatureIntegration", "id", id));
+    //Feature_INTEGRATIONS
+    public Iterable<FeatureIntegration> getAllFeatureIntegrations() {
+        return featureIntegrationRepository.findAll();
+    }
+
+    public Optional<FeatureIntegration> getFeatureIntegrationById(long id) {
+        return featureIntegrationRepository.findById(id);
     }
 
     public FeatureIntegration createFeatureIntegration(FeatureIntegration featureIntegration) {
-        return graphDBService.save(featureIntegration);
+        return featureIntegrationRepository.save(featureIntegration);
     }
 
-    public FeatureIntegration updateFeatureIntegration(long id, FeatureIntegration featureIntegration) {
-        FeatureIntegration existingFeatureIntegration = graphDBService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FeatureIntegration", "id", id));
-        existingFeatureIntegration.setFeature(featureIntegration.getFeature());
-        existingFeatureIntegration.setIntegration(featureIntegration.getIntegration());
-        return graphDBService.save(existingFeatureIntegration);
+    public FeatureIntegration updateFeatureIntegration(long id, FeatureIntegration param) {
+        FeatureIntegration existingFeatureIntegration = featureIntegrationRepository.findById(id).orElse(null);
+        if (existingFeatureIntegration == null)
+            return null;
+        existingFeatureIntegration.setName(param.getName());
+        existingFeatureIntegration.setSourceFeature(param.getSourceFeature());
+        existingFeatureIntegration.setTargetFeature(param.getTargetFeature());
+        return featureIntegrationRepository.save(existingFeatureIntegration);
     }
 
-    public FeatureIntegration deleteFeatureIntegration(long id) {
-        FeatureIntegration existingFeatureIntegration = graphDBService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FeatureIntegration", "id", id));
-        graphDBService.delete(existingFeatureIntegration);
-        return existingFeatureIntegration;
+    public void deleteFeatureIntegration(long id) {
+        featureIntegrationRepository.deleteById(id);
     }
 }

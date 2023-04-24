@@ -14,19 +14,19 @@ public class Feature implements Serializable {
         this.parameters = parameters;
     }
 
-    public String getFeature_id() {
+    public String getId() {
         return feature_id;
     }
 
-    public void setFeature_id(String feature_id) {
+    public void setId(String feature_id) {
         this.feature_id = feature_id;
     }
 
-    public String getFeature_name() {
+    public String getName() {
         return feature_name;
     }
 
-    public void setFeature_name(String feature_name) {
+    public void setName(String feature_name) {
         this.feature_name = feature_name;
     }
 

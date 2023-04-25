@@ -17,6 +17,13 @@ public class User implements Serializable {
     private List<String> preferredFeatureIntegrations;
     private List<String> preferredParameterIntegrations;
 
+    public User(Long id, String email, String givenName, String familyName) {
+        this.identifier = id;
+        this.email = email;
+        this.givenName = givenName;
+        this.familyName = familyName;
+    }
+    
     public Long getIdentifier() {
         return identifier;
     }

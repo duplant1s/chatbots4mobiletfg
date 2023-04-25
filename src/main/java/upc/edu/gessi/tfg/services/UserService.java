@@ -15,29 +15,23 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public Iterable<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getAllUsers() {
+        return userRepository.getAllUsers();
     }
     
-    public Optional<User> getUserById(long id) {
-        return userRepository.findById(id);
+    public User getUserById(long id) {
+        return userRepository.getUser(id);
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public void createUser(User user) {
+        userRepository.createUser(user);
     }
 
-    public User updateUser(long id, User user) {
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser == null)
-            return null;
-        existingUser.setGivenName(user.getGivenName());
-        existingUser.setFamilyName(user.getFamilyName());
-        existingUser.setEmail(user.getEmail());
-        return userRepository.save(existingUser);
+    public void updateUser(long id, User user) {
+        userRepository.updateUser(id, user);
     }
 
     public void deleteUser(long id) {
-        userRepository.deleteById(id);
+        userRepository.deleteUser(id);
     }
 }

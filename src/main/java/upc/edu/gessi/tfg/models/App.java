@@ -15,10 +15,13 @@ public class App implements Serializable {
     private String version;
     private String android_version;
     private String genre;
-    private String changelog;
     private String developer;
     private String developer_site;
     private List<AppCategory> categories;
+
+    public App() {
+        
+    }
 
     public List<String> getFeatures() {
         //otherwise it leads to problems when inserting the app
@@ -73,14 +76,6 @@ public class App implements Serializable {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public String getChangelog() {
-        return changelog;
-    }
-
-    public void setChangelog(String changelog) {
-        this.changelog = changelog;
     }
 
     public String getGenre() {

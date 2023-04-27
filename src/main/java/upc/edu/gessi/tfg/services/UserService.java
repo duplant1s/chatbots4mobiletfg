@@ -19,7 +19,7 @@ public class UserService {
         return userRepository.getAllUsers();
     }
     
-    public User getUserById(long id) {
+    public User getUserById(String id) {
         return userRepository.getUser(id);
     }
 
@@ -27,11 +27,13 @@ public class UserService {
         userRepository.createUser(user);
     }
 
-    public void updateUser(long id, User user) {
+    public void updateUser(String id, User user) {
+        if (user.getIdentifier() == null)
+            user.setIdentifier(id);
         userRepository.updateUser(id, user);
     }
 
-    public void deleteUser(long id) {
+    public void deleteUser(String id) {
         userRepository.deleteUser(id);
     }
 }

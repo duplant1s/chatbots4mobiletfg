@@ -3,6 +3,7 @@ package upc.edu.gessi.tfg.repositories;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 
 import upc.edu.gessi.tfg.models.App;
+import upc.edu.gessi.tfg.models.AppCategory;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -22,48 +23,56 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@org.springframework.stereotype.Repository
 public class AppRepository {
-    private String repoURL = "http://localhost:7200/repositories/ChatbotsReduced";
+    private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
 
     private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
 
 
-    private final IRI schemaAppClass = vf.createIRI("http://schema.org/MobileApplication");
-    private final IRI name = vf.createIRI("http://schema.org/name");
-    private final IRI description = vf.createIRI("http://schema.org/description");
-    private final IRI summary = vf.createIRI("http://schema.org/summary");
-    private final IRI category = vf.createIRI("http://schema.org/applicationCategory");
-    private final IRI version = vf.createIRI("http://schema.org/softwareVersion");
-    private final IRI androidVersion = vf.createIRI("http://schema.org/operatingSystem");
-    private final IRI developer = vf.createIRI("http://schema.org/author");
-    private final IRI developerSite = vf.createIRI("http://schema.org/url");
-    private final IRI identifier = vf.createIRI("http://schema.org/identifier");
+    private final IRI schemaAppClassIRI = vf.createIRI("https://schema.org/MobileApplication");
+    private final IRI identifierIRI = vf.createIRI("https://schema.org/identifier");
+    private final IRI nameIRI = vf.createIRI("https://schema.org/name");
+    private final IRI descriptionIRI = vf.createIRI("https://schema.org/description");
+    private final IRI summaryIRI = vf.createIRI("https://schema.org/abstract");
+    private final IRI appCategoryIRI = vf.createIRI("https://schema.org/applicationCategory");
+    private final IRI datePublishedIRI = vf.createIRI("https://schema.org/datePublished");
+    private final IRI dateModifiedIRI = vf.createIRI("https://schema.org/dateModified");
+    private final IRI softwareVersionIRI = vf.createIRI("https://schema.org/softwareVersion");
+    private final IRI releaseNotesIRI = vf.createIRI("https://schema.org/releaseNotes");
+
+    //required for the description node
+    private final IRI schemaDescriptionClassIRI = vf.createIRI("https://schema.org/DigitalDocument");
+    private final IRI textIRI = vf.createIRI("https://schema.org/text");
+    private final IRI disambiguatingDescriptionIRI = vf.createIRI("https://schema.org/disambiguatingDescription");
+
 
     public AppRepository() {
         this.repository = new HTTPRepository(repoURL);
         this.repository.init();
     }
 
-    public List<App> getAllUsers() {
+    public List<App> getAllApps() {
         List<App> apps = new ArrayList<App>();
 
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = "PREFIX schema: <https://schema.org/>\n"+
-            "SELECT ?id ?name ?description ?summary ?category ?version ?androidVersion ?genre ?changelog ?developer ?developerSite\n"+
+            "SELECT ?id ?name ?description "+
+            "?summary ?releaseNotes "+
+            "?applicationCategory ?datePublished ?dateModified ?softwareVersion \n"+
             "WHERE {\n"+
               "?app a schema:MobileApplication ."+
               "?app schema:identifier ?id ."+
               "?app schema:name ?name ."+
-              "?app schema:description ?description ."+
-              "?app schema:summary ?summary ."+
-              "?app schema:applicationCategory ?category ."+
-              "?app schema:softwareVersion ?version ."+
-              "?app schema:operatingSystem ?androidVersion ."+
-              "?app schema:genre ?genre ."+
-              "?app schema:author ?dev ."+
-              "?dev schema:name ?developer ."+
-              "?dev schema:url ?developerSite ."+
+              "?app schema:description ?desc."+
+              "?desc schema:text ?description ."+
+              "?app schema:abstract ?summary ."+
+              "?app schema:releaseNotes ?releaseNotes ."+
+              "?app schema:applicationCategory ?applicationCategory ."+
+              "?app schema:datePublished ?datePublished ."+
+              "?app schema:dateModified ?dateModified ."+
+              "?app schema:softwareVersion ?softwareVersion ."+
             "}";
             
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
@@ -71,16 +80,19 @@ public class AppRepository {
 
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
+                String identifier = bindingSet.getValue("id").stringValue();
                 String name = bindingSet.getValue("name").stringValue();
                 String description = bindingSet.getValue("description").stringValue();
                 String summary = bindingSet.getValue("summary").stringValue();
-                String category = bindingSet.getValue("category").stringValue();
-                String version = bindingSet.getValue("version").stringValue();
-                String androidVersion = bindingSet.getValue("androidVersion").stringValue();
-                String developer = bindingSet.getValue("developer").stringValue();
-                String developerSite = bindingSet.getValue("developerSite").stringValue();
-                //App app = new App(id, name, description, summary, category, version, androidVersion, developer, developerSite);
-                //apps.add(app);
+                String releaseNotes = bindingSet.getValue("releaseNotes").stringValue();
+                String category = bindingSet.getValue("applicationCategory").stringValue();
+                AppCategory appCategory = AppCategory.valueOf(category);
+                String datePublished = bindingSet.getValue("datePublished").stringValue();
+                String dateModified = bindingSet.getValue("dateModified").stringValue();
+                String version = bindingSet.getValue("softwareVersion").stringValue();
+                App app = new App(name, identifier, description, summary, releaseNotes, appCategory, datePublished, dateModified, version);
+                apps.add(app);
+                
             }
         } finally {
             repository.shutDown();
@@ -89,41 +101,78 @@ public class AppRepository {
         return apps;
     }
 
-    public App getUser(Long id) {
-        App user = null;
+    public App getApp(String id) {
+        App app = null;
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("SELECT ?email ?givenName ?familyName WHERE { ?user a schema:Person ; schema:identifier '%s' ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }", id);
+            String queryString = String.format(
+                "PREFIX schema: <https://schema.org/>\n"+
+                "SELECT ?id ?name ?description "+
+                "?summary ?releaseNotes "+
+                "?applicationCategory ?datePublished ?dateModified ?softwareVersion \n"+
+                "WHERE {\n"+
+                "?app a schema:MobileApplication ."+
+                "?app schema:identifier '%s' ."+
+                "?app schema:name ?name ."+
+                "?app schema:description ?desc."+
+                "?desc schema:text ?description ."+
+                "?app schema:abstract ?summary ."+
+                "?app schema:releaseNotes ?releaseNotes ."+
+                "?app schema:applicationCategory ?applicationCategory ."+
+                "?app schema:datePublished ?datePublished ."+
+                "?app schema:dateModified ?dateModified ."+
+                "?app schema:softwareVersion ?softwareVersion ."+
+              "}", id);
+              
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
 
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                String email = bindingSet.getValue("email").stringValue();
-                String givenName = bindingSet.getValue("givenName").stringValue();
-                String familyName = bindingSet.getValue("familyName").stringValue();
-                //user = new App(id, email, givenName, familyName);
+                String name = bindingSet.getValue("name").stringValue();
+                String description = bindingSet.getValue("description").stringValue();
+                String summary = bindingSet.getValue("summary").stringValue();
+                String releaseNotes = bindingSet.getValue("releaseNotes").stringValue();
+                String category = bindingSet.getValue("applicationCategory").stringValue();
+                AppCategory appCategory = AppCategory.valueOf(category);
+                String datePublished = bindingSet.getValue("datePublished").stringValue();
+                String dateModified = bindingSet.getValue("dateModified").stringValue();
+                String version = bindingSet.getValue("softwareVersion").stringValue();
+                app = new App(name, id, description, summary, releaseNotes, appCategory, datePublished, dateModified, version);
             }
         } finally {
             repository.shutDown();
         }
         
-        return user;
+        return app;
     }
 
-    public void createUser(App user) {
-        String id = UUID.randomUUID().toString();
+    public void createApp(App app) {
+        ModelBuilder appDescription = new ModelBuilder();
+        appDescription.setNamespace("schema", "https://schema.org/");
+        appDescription.subject("schema:DigitalDocument/"+app.getIdentifier()+"-DESCRIPTION")
+                .add(RDF.TYPE, schemaDescriptionClassIRI)
+                .add(disambiguatingDescriptionIRI, vf.createLiteral("description"))
+                .add(textIRI, vf.createLiteral(app.getDescription()));
+        Model descriptionModel = appDescription.build();
 
-        ModelBuilder modelBuilder = new ModelBuilder();
-        // modelBuilder.setNamespace("schema", "http://schema.org/");
-        // modelBuilder.subject("http://localhost:8080/users/" + id)
-        //         .add(RDF.TYPE, schemaPersonClass)
-        //         .add(identifierProperty, vf.createLiteral(id))
-        //         .add(emailProperty, vf.createLiteral(user.getEmail()))
-        //         .add(givenNameProperty, vf.createLiteral(user.getGivenName()))
-        //         .add(familyNameProperty, vf.createLiteral(user.getFamilyName()));
+        ModelBuilder modelBuilderApp = new ModelBuilder();
+        modelBuilderApp.setNamespace("schema", "https://schema.org/");
+        modelBuilderApp.subject("schema:MobileApplication/"+app.getIdentifier())
+                .add(RDF.TYPE, schemaAppClassIRI)
+                .add(identifierIRI, vf.createLiteral(app.getIdentifier()))
+                .add(nameIRI, vf.createLiteral(app.getName()))
+                //we connect the app to its description
+                .add(descriptionIRI, vf.createIRI("https://schema.org/DigitalDocument/"+app.getIdentifier()+"-DESCRIPTION"))
+                .add(summaryIRI, vf.createLiteral(app.getSummary()))
+                .add(releaseNotesIRI, vf.createLiteral(app.getReleaseNotes()))
+                .add(appCategoryIRI, vf.createLiteral(app.getApplicationCategory().toString()))
+                .add(datePublishedIRI, vf.createLiteral(app.getDatePublished()))
+                .add(dateModifiedIRI, vf.createLiteral(app.getDateModified()))
+                .add(softwareVersionIRI, vf.createLiteral(app.getSoftwareVersion()));
+        Model model = modelBuilderApp.build();
 
-        Model model = modelBuilder.build();
         try (RepositoryConnection connection = repository.getConnection()) {
+            connection.add(descriptionModel);
             connection.add(model);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -132,7 +181,8 @@ public class AppRepository {
         }
     }
 
-    public void updateUser(Long id, App updatedUser) {
+    //TODOOOOOOOOOOOOOOOOOOOOO
+    public void updateApp(String id, App updatedApp) {
         try (RepositoryConnection connection = repository.getConnection()) {
             //String queryString = String.format("DELETE { ?user schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName } INSERT { ?user schema:email '%s' ; schema:givenName '%s' ; schema:familyName '%s' } WHERE { ?user a schema:Person ; schema:identifier '%s' ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }", updatedUser.getEmail(), updatedUser.getGivenName(), updatedUser.getFamilyName(), id);
             //Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
@@ -145,9 +195,9 @@ public class AppRepository {
         }
     }
 
-    public void deleteApp(Long id) {
+    public void deleteApp(String id) {
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("DELETE WHERE { ?user a schema:Person ; schema:identifier '%s' ; ?p ?o }", id);
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" + "DELETE WHERE { ?user a schema:MobileApplication ; schema:identifier '%s' ; ?p ?o }", id);
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }

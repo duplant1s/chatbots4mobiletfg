@@ -1,65 +1,46 @@
 package upc.edu.gessi.tfg.models;
 
-import com.google.gson.Gson;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class App implements Serializable {
 
-    private String app_name;
-    private String package_name;
+    private String name;
+    private String identifier;
     private String description;
     private String summary;
-    private String category;
-    private String version;
-    private String android_version;
-    private String genre;
-    private String developer;
-    private String developer_site;
-    private List<AppCategory> categories;
+    private String releaseNotes;
+    private AppCategory applicationCategory;
+    private String datePublished;
+    private String dateModified;
+    private String softwareVersion;
 
-    public App() {
-        
+    public App(String name, String identifier, String description, String summary, String releaseNotes, AppCategory applicationCategory, String datePublished, String dateModified, String softwareVersion) {
+        this.name = name;
+        this.identifier = identifier;
+        this.description = description;
+        this.summary = summary;
+        this.releaseNotes = releaseNotes;
+        this.applicationCategory = applicationCategory;
+        this.datePublished = datePublished;
+        this.dateModified = dateModified;
+        this.softwareVersion = softwareVersion;
     }
 
-    public List<String> getFeatures() {
-        //otherwise it leads to problems when inserting the app
-        if (features != null)
-            return features;
-        else return new ArrayList<>();
+    public String getName() {
+        return name;
     }
 
-    public void setFeatures(List<String> features) {
-        this.features = features;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<String> getTags() {
-        return tags;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
-
-    private List<String> features;
-    private List<String> tags;
-
-
-    public String getPackage_name() {
-        return package_name;
-    }
-
-    public void setPackage_name(String package_name) {
-        this.package_name = package_name;
-    }
-
-    public String getApp_name() {
-        return this.app_name;
-    }
-
-    public void setApp_name(String app_name) {
-        this.app_name = app_name;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getDescription() {
@@ -70,26 +51,6 @@ public class App implements Serializable {
         this.description = description;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
-
-    public String toString() {
-        return new Gson().toJson(this);
-    }
-
     public String getSummary() {
         return summary;
     }
@@ -98,43 +59,47 @@ public class App implements Serializable {
         this.summary = summary;
     }
 
-    public String getCategory() {
-        return category;
+    public String getDatePublished() {
+        return datePublished;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setDatePublished(String datePublished) {
+        this.datePublished = datePublished;
     }
 
-    public String getAndroid_version() {
-        return android_version;
+    public String getDateModified() {
+        return dateModified;
     }
 
-    public void setAndroid_version(String android_version) {
-        this.android_version = android_version;
+    public void setDateModified(String dateModified) {
+        this.dateModified = dateModified;
     }
 
-    public String getDeveloper() {
-        return developer;
+    public String getReleaseNotes() {
+        return releaseNotes;
     }
 
-    public void setDeveloper(String developer) {
-        this.developer = developer;
+    public void setReleaseNotes(String releaseNotes) {
+        this.releaseNotes = releaseNotes;
     }
 
-    public String getDeveloper_site() {
-        return developer_site;
+    public AppCategory getApplicationCategory() {
+        return applicationCategory;
     }
 
-    public void setDeveloper_site(String developer_site) {
-        this.developer_site = developer_site;
+    public void setApplicationCategory(AppCategory applicationCategory) {
+        this.applicationCategory = applicationCategory;
     }
 
-    public List<AppCategory> getCategories() {
-        return categories;
+    public String getSoftwareVersion() {
+        return softwareVersion;
     }
 
-    public void setCategories(List<AppCategory> categories) {
-        this.categories = categories;
+    public void setSoftwareVersion(String softwareVersion) {
+        this.softwareVersion = softwareVersion;
     }
+
+
+
+
 }

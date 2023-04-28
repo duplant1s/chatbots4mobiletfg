@@ -8,6 +8,11 @@ public class Feature implements Serializable {
     private String feature_name;
     private List<String> parameters;
 
+    public Feature(String feature_id, String feature_name) {
+        this.feature_id = feature_id;
+        this.feature_name = feature_name;
+    }
+    
     public Feature(String feature_id, String feature_name, List<String> parameters) {
         this.feature_id = feature_id;
         this.feature_name = feature_name;

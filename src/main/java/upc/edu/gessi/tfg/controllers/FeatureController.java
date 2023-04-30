@@ -1,7 +1,8 @@
 package upc.edu.gessi.tfg.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class FeatureController {
     private FeatureService featureService;
 
     @GetMapping
-    public ResponseEntity<Iterable<Feature>> getAllParameters() {
+    public ResponseEntity<List<Feature>> getAllFeatures() {
         return ResponseEntity.ok(featureService.getAllFeatures());
     }
 
@@ -54,31 +55,36 @@ public class FeatureController {
         return ResponseEntity.noContent().build();
     }
 
-    // @GetMapping("/integrations/{id}")
-    // public ResponseEntity<FeatureIntegration> getFeatureIntegration(@PathVariable long id) {
-    //     return featureService.getFeatureIntegrationById(id)
-    //         .map(ResponseEntity::ok)
-    //         .orElse(ResponseEntity.notFound().build());
-    // }
+    //INTEGRATIONS
 
-    // @PostMapping("/integration")
-    // public ResponseEntity<FeatureIntegration> createFeatureIntegration(@RequestBody FeatureIntegration featureIntegration) {
-    //     return new ResponseEntity<>(featureService.createFeatureIntegration(featureIntegration), HttpStatus.CREATED);
-    // }
+    @GetMapping("/integrations")
+    public ResponseEntity<List<FeatureIntegration>> getAllFeatureIntegrations() {
+        return ResponseEntity.ok(featureService.getAllFeatureIntegrations());
+    }
 
-    // @PutMapping("/integrations/{id}")
-    // public ResponseEntity<FeatureIntegration> updateFeatureIntegration(@PathVariable long id, @RequestBody FeatureIntegration featureIntegration) {
-    //     return featureService.getFeatureIntegrationById(id)
-    //     .map(existingFeatureIntegration -> {
-    //         featureIntegration.setId(existingFeatureIntegration.getId());
-    //         return new ResponseEntity<>(featureService.createFeatureIntegration(featureIntegration), HttpStatus.OK);
-    //     })
-    //     .orElse(ResponseEntity.notFound().build());
-    // }
+    @GetMapping("/integrations/{id}")
+    public ResponseEntity<FeatureIntegration> getFeatureIntegration(@PathVariable String id) {
+        FeatureIntegration featureIntegration = featureService.getFeatureIntegration(id);
+        if (featureIntegration == null)
+            return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(featureIntegration);
+    }
 
-    // @DeleteMapping("/integrations/{id}")
-    // public ResponseEntity<FeatureIntegration> deleteFeatureIntegration(@PathVariable long id) {
-    //     featureService.deleteFeatureIntegration(id);
-    //     return ResponseEntity.noContent().build();
-    // }
+    @PostMapping("/integrations")
+    public ResponseEntity<FeatureIntegration> createFeatureIntegration(@RequestBody FeatureIntegration featureIntegration) {
+        featureService.createFeatureIntegration(featureIntegration);
+        return ResponseEntity.created(null).build();
+    }
+
+    @PutMapping("/integrations/{id}")
+    public ResponseEntity<FeatureIntegration> updateFeatureIntegration(@PathVariable String id, @RequestBody FeatureIntegration featureIntegration) {
+        featureService.updateFeatureIntegration(id, featureIntegration);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/integrations/{id}")
+    public ResponseEntity<FeatureIntegration> deleteFeatureIntegration(@PathVariable String id) {
+        featureService.deleteFeatureIntegration(id);
+        return ResponseEntity.noContent().build();
+    }
 }

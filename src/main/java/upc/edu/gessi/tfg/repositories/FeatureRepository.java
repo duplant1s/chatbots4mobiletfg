@@ -1,7 +1,11 @@
 package upc.edu.gessi.tfg.repositories;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -24,12 +28,15 @@ public class FeatureRepository {
     private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
 
+    private ParameterRepository parameterRepository = new ParameterRepository();
+
     private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
 
     //Features IRIs
     private final IRI schemaFeatureClassIRI = vf.createIRI("https://schema.org/DefinedTerm");
     private final IRI identifierPropertyIRI = vf.createIRI("https://schema.org/identifier");
     private final IRI namePropertyIRI = vf.createIRI("https://schema.org/name");
+    private final IRI hasPartPropertyIRI = vf.createIRI("https://schema.org/hasPart");
 
     public FeatureRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -41,23 +48,29 @@ public class FeatureRepository {
 
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = "PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?name"+
-            "WHERE { \n"+
-                "?feature a schema:DefinedTerm ."+ 
-                "?feature schema:identifier ?id ."+ 
-                "?feature schema:name ?name"
-            +"}";
+            "SELECT ?id ?name ?parameter WHERE {\n" +
+                "?feature a schema:DefinedTerm ;" +   
+                " schema:name ?name ; " +
+                " schema:hasPart ?parameter . " +
+            "}";
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
-
+            Map<String, Feature> featureMap = new HashMap<>();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                String id = bindingSet.getValue("id").stringValue();
                 String name = bindingSet.getValue("name").stringValue();
-                Feature feature = new Feature(id, name);
-                features.add(feature);
+                String parameter = bindingSet.getValue("parameter").stringValue();
+                Feature feature;
+                if (featureMap.containsKey(name)) {
+                    feature = featureMap.get(name);
+                    feature.getParameters().add(parameter);
+                } else {
+                    feature = new Feature(name, name, new ArrayList<String>(Arrays.asList(parameter)));
+                    featureMap.put(name, feature);
+                }
             }
+    features.addAll(featureMap.values());
         } finally {
             repository.shutDown();
         }
@@ -69,19 +82,22 @@ public class FeatureRepository {
         Feature feature = null;
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?name"+
-            "WHERE { \n"+
-                "?feature a schema:DefinedTerm ."+ 
-                "?feature schema:identifier '%s' ."+ 
-                "?feature schema:name ?name }", id);
+            "SELECT ?name ?parameter WHERE { \n"+
+                "<https://schema.org/DefinedTerm/%s> a schema:DefinedTerm ;"+ 
+                //"       schema:identifier %s' ;"+ 
+                "       schema:name ?name ;" + 
+                "       schema:hasPart ?parameter }", id);
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
 
+            List<String> parameters = new ArrayList<String>();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String name = bindingSet.getValue("name").stringValue();
-                feature = new Feature(id, name);
+                String parameter = bindingSet.getValue("parameter").stringValue();
+                parameters.add(parameter);
+                feature = new Feature(id, name, parameters);
             }
         } finally {
             repository.shutDown();
@@ -95,8 +111,14 @@ public class FeatureRepository {
         modelBuilder.setNamespace("schema", "https://schema.org/");
         modelBuilder.subject("schema:DefinedTerm/"+feature.getId())
             .add(RDF.TYPE, schemaFeatureClassIRI)
-            .add(identifierPropertyIRI, vf.createLiteral(feature.getId()))
+            //.add(identifierPropertyIRI, vf.createLiteral(feature.getId()))
             .add(namePropertyIRI, vf.createLiteral(feature.getName()));
+        Iterator<String> it = feature.getParameters().iterator();
+        while (it.hasNext()) {
+            String parameter = it.next();
+            String paramType = parameterRepository.getParameter(parameter).getType().toString();
+            modelBuilder.add(hasPartPropertyIRI, vf.createIRI("https://schema.org/"+paramType+"/"+parameter));
+        }
         
         Model model = modelBuilder.build();
         try (RepositoryConnection connection = repository.getConnection()) {
@@ -108,12 +130,15 @@ public class FeatureRepository {
         }
     }
 
+
+
+    //TODOOOOOOOOOOOOOOOOOOOOOOO
     public void updateFeature(String id, Feature updatedFeature) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { ?feature schema:name ?name }" +
-            "INSERT { ?feature schema:name \"%s\" }" +
-            "WHERE { ?feature schema:identifier \"%s\" . ?feature schema:name ?name }", updatedFeature.getName(), id);
+            "INSERT { ?feature schema:name '%s' }" +
+            "WHERE { <https://schema.org/%s> a schema:DefinedTerm . ?feature schema:name ?name }", updatedFeature.getName(), id);
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
@@ -128,7 +153,7 @@ public class FeatureRepository {
     public void deleteFeature(String id) {
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "DELETE WHERE { ?feature a schema:DefinedTerm ; schema:identifier '%s' ; ?p ?o }", id);
+            "DELETE WHERE { ?feature a schema:DefinedTerm ; schema:name '%s' ; ?p ?o }", id);
            
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

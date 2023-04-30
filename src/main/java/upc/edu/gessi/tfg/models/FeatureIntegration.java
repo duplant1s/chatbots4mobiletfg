@@ -3,50 +3,45 @@ package upc.edu.gessi.tfg.models;
 import java.io.Serializable;
 
 public class FeatureIntegration implements Serializable {
-    private String featureIntegration_id;
-    private String featureIntegration_name;
-    private String sourceFeature;
-    private String targetFeature;
+    private String identifier;
+    private String name;
+    private String source;
+    private String target;
 
-    public FeatureIntegration() {
-    }
-    
-    public FeatureIntegration(String featureIntegration_id, String featureIntegration_name, String sourceFeature, String targetFeature) {
-        this.featureIntegration_id = featureIntegration_id;
-        this.featureIntegration_name = featureIntegration_name;
-        this.sourceFeature = sourceFeature;
-        this.targetFeature = targetFeature;
+    public FeatureIntegration(String source, String target) {
+        this.source = source;
+        this.target = target;
     }
 
     public String getId() {
-        return featureIntegration_id;
+        return identifier;
     }
 
-    public void setId(String featureIntegration_id) {
-        this.featureIntegration_id = featureIntegration_id;
+    public void setId(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getName() {
-        return featureIntegration_name;
+        return name;
     }
 
-    public void setName(String featureIntegration_name) {
-        this.featureIntegration_name = featureIntegration_name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getSourceFeature() {
-        return sourceFeature;
+        return source;
     }
 
     public void setSourceFeature(String sourceFeature) {
-        this.sourceFeature = sourceFeature;
+        this.source = sourceFeature;
     }
 
     public String getTargetFeature() {
-        return targetFeature;
+        return target;
     }
 
     public void setTargetFeature(String targetFeature) {
-        this.targetFeature = targetFeature;
+        this.target = targetFeature;
     }
 }

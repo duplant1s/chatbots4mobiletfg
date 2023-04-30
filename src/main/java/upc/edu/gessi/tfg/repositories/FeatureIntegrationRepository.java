@@ -48,10 +48,10 @@ public class FeatureIntegrationRepository{
 
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = "PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?name ?source ?target"+
+            "SELECT ?identifier ?name ?source ?target "+
             "WHERE { \n"+
                 "?featureIntegration a schema:Action ."+ 
-                "?featureIntegration schema:identifier ?id ."+ 
+                "?featureIntegration schema:identifier ?identifier ."+
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
@@ -62,11 +62,13 @@ public class FeatureIntegrationRepository{
 
             while(result.hasNext()) {
                 BindingSet bindingSet = result.next();
-                String id = bindingSet.getValue("id").stringValue();
+                String id = bindingSet.getValue("identifier").stringValue();
                 String name = bindingSet.getValue("name").stringValue();
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
-                FeatureIntegration featureIntegration = new FeatureIntegration(id, name, source, target);
+                FeatureIntegration featureIntegration = new FeatureIntegration(source, target);
+                featureIntegration.setId(id);
+                featureIntegration.setName(name);
                 featureIntegrations.add(featureIntegration);
             }
         } finally {
@@ -81,7 +83,7 @@ public class FeatureIntegrationRepository{
 
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?name ?source ?target"+
+            "SELECT ?id ?name ?source ?target "+
             "WHERE { \n"+
                 "?featureIntegration a schema:Action ."+ 
                 "?featureIntegration schema:identifier '%s' ."+ 
@@ -98,7 +100,9 @@ public class FeatureIntegrationRepository{
                 String name = bindingSet.getValue("name").stringValue();
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
-                featureIntegration = new FeatureIntegration(id, name, source, target);
+                featureIntegration = new FeatureIntegration(source, target);
+                featureIntegration.setId(id);
+                featureIntegration.setName(name);
             }
         } finally {
             repository.shutDown();
@@ -110,7 +114,7 @@ public class FeatureIntegrationRepository{
     public void createFeatureIntegration(FeatureIntegration featureIntegration) {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.setNamespace("schema", "https://schema.org/");
-        modelBuilder.subject("schema:Action/"+featureIntegration.getId())
+        modelBuilder.subject("schema:Action/"+featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature())
             .add(RDF.TYPE, schemaFeatureIntegrationClassIRI)
             .add(identifierPropertyIRI, featureIntegration.getId())
             .add(namePropertyIRI, featureIntegration.getName())
@@ -128,15 +132,19 @@ public class FeatureIntegrationRepository{
         }
     }
 
+
+    //TODOOOOOOOOOOOO
     public void updateFeatureIntegration(String id, FeatureIntegration updatedFeatureIntegration) {
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+
+                "?featureIntegration schema:identifier ?identifier ."+
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
             "}\n"+
             "INSERT { \n"+
+                "?featureIntegration schema:identifier '%s' ."+
                 "?featureIntegration schema:name '%s' ."+
                 "?featureIntegration schema:source '%s' ."+
                 "?featureIntegration schema:target '%s'"+
@@ -147,7 +155,7 @@ public class FeatureIntegrationRepository{
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
-            "}", updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
+            "}", updatedFeatureIntegration.getId(), updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

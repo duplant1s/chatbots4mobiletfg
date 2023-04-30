@@ -4,35 +4,30 @@ import java.io.Serializable;
 import java.util.List;
 
 public class Feature implements Serializable {
-    private String feature_id;
-    private String feature_name;
+    private String identifier;
+    private String name;
     private List<String> parameters;
 
-    public Feature(String feature_id, String feature_name) {
-        this.feature_id = feature_id;
-        this.feature_name = feature_name;
-    }
-    
-    public Feature(String feature_id, String feature_name, List<String> parameters) {
-        this.feature_id = feature_id;
-        this.feature_name = feature_name;
+    public Feature(String identifier, String name, List<String> parameters) {
+        this.identifier = identifier;
+        this.name = name;
         this.parameters = parameters;
     }
 
     public String getId() {
-        return feature_id;
+        return identifier;
     }
 
-    public void setId(String feature_id) {
-        this.feature_id = feature_id;
+    public void setId(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getName() {
-        return feature_name;
+        return name;
     }
 
-    public void setName(String feature_name) {
-        this.feature_name = feature_name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<String> getParameters() {

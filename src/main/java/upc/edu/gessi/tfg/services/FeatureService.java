@@ -3,6 +3,8 @@ package upc.edu.gessi.tfg.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.rdf4j.query.algebra.If;
+import org.eclipse.rdf4j.query.algebra.Str;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +38,8 @@ public class FeatureService {
     public void updateFeature(String id, Feature feature) {
         if (feature.getId() == null)
             feature.setId(id);
+        if (feature.getParameters() == null)
+            feature.setParameters(null);
         featureRepository.updateFeature(id, feature);
     }
 
@@ -44,29 +48,29 @@ public class FeatureService {
     }
 
     //Feature_INTEGRATIONS
-    // public Iterable<FeatureIntegration> getAllFeatureIntegrations() {
-    //     return featureIntegrationRepository.findAll();
-    // }
+    public List<FeatureIntegration> getAllFeatureIntegrations() {
+        return featureIntegrationRepository.getAllFeatureIntegrations();
+    }
 
-    // public Optional<FeatureIntegration> getFeatureIntegrationById(long id) {
-    //     return featureIntegrationRepository.findById(id);
-    // }
+    public FeatureIntegration getFeatureIntegration(String id) {
+        return featureIntegrationRepository.getFeatureIntegration(id);
+    }
 
-    // public FeatureIntegration createFeatureIntegration(FeatureIntegration featureIntegration) {
-    //     return featureIntegrationRepository.save(featureIntegration);
-    // }
+    public void createFeatureIntegration(FeatureIntegration featureIntegration) {
+        featureIntegration.setName(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
+        featureIntegration.setId(featureIntegration.getName());
+        featureIntegrationRepository.createFeatureIntegration(featureIntegration);
+    }
 
-    // public FeatureIntegration updateFeatureIntegration(long id, FeatureIntegration param) {
-    //     FeatureIntegration existingFeatureIntegration = featureIntegrationRepository.findById(id).orElse(null);
-    //     if (existingFeatureIntegration == null)
-    //         return null;
-    //     existingFeatureIntegration.setName(param.getName());
-    //     existingFeatureIntegration.setSourceFeature(param.getSourceFeature());
-    //     existingFeatureIntegration.setTargetFeature(param.getTargetFeature());
-    //     return featureIntegrationRepository.save(existingFeatureIntegration);
-    // }
+    public void updateFeatureIntegration(String id, FeatureIntegration param) {
+        if (param.getName() == null)
+            param.setName(param.getSourceFeature()+"-"+param.getTargetFeature());
+        if (param.getId() == null)
+            param.setId(param.getName());
+        featureIntegrationRepository.updateFeatureIntegration(id, param);
+    }
 
-    // public void deleteFeatureIntegration(long id) {
-    //     featureIntegrationRepository.deleteById(id);
-    // }
+    public void deleteFeatureIntegration(String id) {
+        featureIntegrationRepository.deleteFeatureIntegration(id);
+    }
 }

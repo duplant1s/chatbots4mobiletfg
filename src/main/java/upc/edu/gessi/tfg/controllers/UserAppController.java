@@ -30,7 +30,7 @@ public class UserAppController {
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping
+    @PostMapping("/users")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         userAppService.createUser(user);
         return ResponseEntity.created(null).build();

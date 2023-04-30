@@ -1,76 +1,68 @@
-// package upc.edu.gessi.tfg.services;
+package upc.edu.gessi.tfg.services;
 
-// import java.util.Optional;
+import java.util.List;
+import java.util.Optional;
 
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-// import upc.edu.gessi.tfg.models.Parameter;
-// import upc.edu.gessi.tfg.models.ParameterIntegration;
-// import upc.edu.gessi.tfg.repositories.ParameterIntegrationRepository;
-// import upc.edu.gessi.tfg.repositories.ParameterRepository;
+import upc.edu.gessi.tfg.models.Parameter;
+import upc.edu.gessi.tfg.models.ParameterIntegration;
+import upc.edu.gessi.tfg.repositories.ParameterIntegrationRepository;
+import upc.edu.gessi.tfg.repositories.ParameterRepository;
 
-// @Service
-// public class ParameterService {
+@Service
+public class ParameterService {
 
-//     @Autowired
-//     private ParameterRepository parameterRepository;
+    @Autowired
+    private ParameterRepository parameterRepository;
 
-//     @Autowired
-//     private ParameterIntegrationRepository parameterIntegrationRepository;
+    @Autowired
+    private ParameterIntegrationRepository parameterIntegrationRepository;
 
-//     //PARAMETERS
-//     public Iterable<Parameter> getAllParameters() {
-//         return parameterRepository.findAll();
-//     }
+    //PARAMETERS
+    public List<Parameter> getAllParameters() {
+        return parameterRepository.getAllParameters();
+    }
 
-//     public Optional<Parameter> getParameterById(long id) {
-//         return parameterRepository.findById(id);
-//     }
+    public Parameter getParameter(String id) {
+        return parameterRepository.getParameter(id);
+    }
 
-//     public Parameter createParameter(Parameter parameter) {
-//         return parameterRepository.save(parameter);
-//     }
+    public void createParameter(Parameter parameter) {
+        if (parameter.getIdentifier() == null)
+            parameter.setIdentifier(parameter.getName());
+        parameterRepository.createParameter(parameter);
+    }
 
-//     public Parameter updateParameter(long id, Parameter param) {
-//         Parameter existingParameter = parameterRepository.findById(id).orElse(null);
-//         if (existingParameter == null)
-//             return null;
-//         existingParameter.setName(param.getName());
-//         existingParameter.setType(param.getType());
-//         existingParameter.setValue(param.getValue());
-//         return parameterRepository.save(existingParameter);
-//     }
+    public void updateParameter(String id, Parameter param) {
+        if (param.getIdentifier() == null)
+            param.setIdentifier(id);
+        parameterRepository.updateParameter(id, param);
+    }
 
-//     public void deleteParameter(long id) {
-//         parameterRepository.deleteById(id);
-//     }
+    public void deleteParameter(String id) {
+        parameterRepository.deleteParameter(id);
+    }
 
-//     //PARAMETER_INTEGRATIONS
-//     public Iterable<ParameterIntegration> getAllParameterIntegrations() {
-//         return parameterIntegrationRepository.findAll();
-//     }
+    //PARAMETER_INTEGRATIONS
+    public List<ParameterIntegration> getAllParameterIntegrations() {
+        return parameterIntegrationRepository.getAllParameterIntegrations();
+    }
 
-//     public Optional<ParameterIntegration> getParameterIntegrationById(long id) {
-//         return parameterIntegrationRepository.findById(id);
-//     }
+    public ParameterIntegration getParameterIntegration(String id) {
+        return parameterIntegrationRepository.getParameterIntegration(id);
+    }
 
-//     public ParameterIntegration createParameterIntegration(ParameterIntegration parameterIntegration) {
-//         return parameterIntegrationRepository.save(parameterIntegration);
-//     }
+    public void createParameterIntegration(ParameterIntegration parameterIntegration) {
+        parameterIntegrationRepository.createParameterIntegration(parameterIntegration);
+    }
 
-//     public ParameterIntegration updateParameterIntegration(long id, ParameterIntegration param) {
-//         ParameterIntegration existingParameterIntegration = parameterIntegrationRepository.findById(id).orElse(null);
-//         if (existingParameterIntegration == null)
-//             return null;
-//         existingParameterIntegration.setName(param.getName());
-//         existingParameterIntegration.setSourceParameter(param.getSourceParameter());
-//         existingParameterIntegration.setTargetParameter(param.getTargetParameter());
-//         existingParameterIntegration.setValue(param.getValue());
-//         return parameterIntegrationRepository.save(existingParameterIntegration);
-//     }
+    public void updateParameterIntegration(String id, ParameterIntegration param) {
+        parameterIntegrationRepository.updateParameterIntegration(id, param);
+    }
 
-//     public void deleteParameterIntegration(long id) {
-//         parameterIntegrationRepository.deleteById(id);
-//     }
-// }
+    public void deleteParameterIntegration(String id) {
+        parameterIntegrationRepository.deleteParameterIntegration(id);
+    }
+}

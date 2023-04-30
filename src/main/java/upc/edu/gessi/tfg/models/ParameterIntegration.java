@@ -3,61 +3,37 @@ package upc.edu.gessi.tfg.models;
 import java.io.Serializable;
 
 public class ParameterIntegration implements Serializable {
-    private String parameterIntegration_id;
-    private String parameterIntegration_name;
-    private String sourceParameter;
-    private String targetParameter;
-    private Object parameterIntegration_value;
-    
-    public ParameterIntegration() {
-    }
+    private String identifier;
+    private String source;
+    private String target;
 
-    public ParameterIntegration(String parameterIntegration_id, String parameterIntegration_name, String sourceParameter, String targetParameter, Object parameterIntegration_value) {
-        this.parameterIntegration_id = parameterIntegration_id;
-        this.parameterIntegration_name = parameterIntegration_name;
-        this.sourceParameter = sourceParameter;
-        this.targetParameter = targetParameter;
-        this.parameterIntegration_value = parameterIntegration_value;
+    public ParameterIntegration(String identifier, String source, String target) {
+        this.identifier = identifier;
+        this.source = source;
+        this.target = target;
     }
 
     public String getId() {
-        return parameterIntegration_id;
+        return identifier;
     }
 
     public void setId(String parameterIntegration_id) {
-        this.parameterIntegration_id = parameterIntegration_id;
-    }
-
-    public String getName() {
-        return parameterIntegration_name;
-    }
-
-    public void setName(String parameterIntegration_name) {
-        this.parameterIntegration_name = parameterIntegration_name;
+        this.identifier = parameterIntegration_id;
     }
 
     public String getSourceParameter() {
-        return sourceParameter;
+        return source;
     }
 
     public void setSourceParameter(String sourceParameter) {
-        this.sourceParameter = sourceParameter;
+        this.source = sourceParameter;
     }
 
     public String getTargetParameter() {
-        return targetParameter;
+        return target;
     }
 
     public void setTargetParameter(String targetParameter) {
-        this.targetParameter = targetParameter;
+        this.target = targetParameter;
     }
-
-    public Object getValue() {
-        return parameterIntegration_value;
-    }
-
-    public void setValue(Object parameterIntegration_value) {
-        this.parameterIntegration_value = parameterIntegration_value;
-    }
-
 }

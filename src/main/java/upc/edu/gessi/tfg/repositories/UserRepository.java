@@ -108,10 +108,10 @@ public class UserRepository  {
     public void updateUser(String id, User updatedUser) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" 
-            +"DELETE { ?user schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }"
-            +"INSERT { ?user schema:email '%s' ; schema:givenName '%s' ; schema:familyName '%s' }"
+            +"DELETE { ?user schema:identifier ?id ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }"
+            +"INSERT { ?user schema:identifier '%s'; schema:email '%s' ; schema:givenName '%s' ; schema:familyName '%s' }"
             +"WHERE { ?user a schema:Person ; schema:identifier '%s' ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }", 
-            updatedUser.getEmail(), updatedUser.getGivenName(), updatedUser.getFamilyName(), id);
+            updatedUser.getIdentifier(), updatedUser.getEmail(), updatedUser.getGivenName(), updatedUser.getFamilyName(), id);
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }

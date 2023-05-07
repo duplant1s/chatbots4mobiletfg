@@ -5,6 +5,7 @@ import upc.edu.gessi.tfg.models.User;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -13,7 +14,11 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 @org.springframework.stereotype.Repository
 public class UserRepository  {
@@ -29,6 +34,9 @@ public class UserRepository  {
     private final IRI emailProperty = vf.createIRI("https://schema.org/email");
     private final IRI givenNameProperty = vf.createIRI("https://schema.org/givenName");
     private final IRI familyNameProperty = vf.createIRI("https://schema.org/familyName");
+    private final IRI applicationProperty = vf.createIRI("https://schema.org/application");
+    private final IRI preferredFeatureIntegration = vf.createIRI("https://schema.org/Action");
+    private final IRI preferredParameterIntegration = vf.createIRI("https://schema.org/PropertyValue");
 
     public UserRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -40,11 +48,13 @@ public class UserRepository  {
 
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = "PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?email ?givenName ?familyName WHERE { ?user a schema:Person ."+ 
+            "SELECT ?id ?email ?givenName ?familyName ?app ?prefFeature ?prefParam WHERE { ?user a schema:Person ."+ 
             "?user schema:identifier ?id . ?user schema:email ?email . ?user schema:givenName ?givenName ."+ 
-            "?user schema:familyName ?familyName }";
+            "?user schema:familyName ?familyName . OPTIONAL { ?user schema:application ?app . " + 
+            "?user schema:Action ?prefFeature . ?user schema:PropertyValue ?prefParam } }";
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
+            Map<String, User> userMap = new HashMap<String, User>();
 
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -52,9 +62,24 @@ public class UserRepository  {
                 String email = bindingSet.getValue("email").stringValue();
                 String givenName = bindingSet.getValue("givenName").stringValue();
                 String familyName = bindingSet.getValue("familyName").stringValue();
-                User user = new User(id, email, givenName, familyName);
-                users.add(user);
+                Value appValue = bindingSet.getValue("app");
+                String app = appValue != null ? appValue.stringValue() : null;
+                Value prefFeatureInt = bindingSet.getValue("prefFeature");
+                String prefFeature = prefFeatureInt != null ? prefFeatureInt.stringValue() : null;
+                Value prefParamInt = bindingSet.getValue("prefParam");
+                String prefParam = prefParamInt != null ? prefParamInt.stringValue() : null;
+                User user;
+                if (userMap.containsKey(id)) {
+                    user = userMap.get(id);
+                    user.getApps().add(app);
+                    user.getPreferredFeatureIntegrations().add(prefFeature);
+                    user.getPreferredParameterIntegrations().add(prefParam);
+                } else {
+                    user = new User(id, email, givenName, familyName, new ArrayList<String>(Arrays.asList(app)), new ArrayList<String>(Arrays.asList(prefFeature)), new ArrayList<String>(Arrays.asList(prefParam)));
+                    userMap.put(id, user);
+                }
             }
+            users.addAll(userMap.values());
         } finally {
             repository.shutDown();
         }
@@ -66,17 +91,38 @@ public class UserRepository  {
         User user = null;
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "\n" +"SELECT ?email ?givenName ?familyName WHERE { ?user a schema:Person ; schema:identifier '%s' ;"+
-            "schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }", id);
+            "SELECT ?email ?givenName ?familyName ?app ?prefFeature ?prefParam WHERE { ?user a schema:Person ."+ 
+            "?user schema:identifier '%s' . ?user schema:email ?email . ?user schema:givenName ?givenName ."+ 
+            "?user schema:familyName ?familyName . OPTIONAL { ?user schema:application ?app " + 
+            "?user schema:Action ?prefFeature . ?user schema:PropertyValue ?prefParam} }", id);
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
-
+            
+            List<String> apps = new ArrayList<String>();
+            List<String> prefFeature = new ArrayList<String>();
+            List<String> prefParam = new ArrayList<String>();
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String email = bindingSet.getValue("email").stringValue();
                 String givenName = bindingSet.getValue("givenName").stringValue();
                 String familyName = bindingSet.getValue("familyName").stringValue();
-                user = new User(id, email, givenName, familyName);
+                Value appValue = bindingSet.getValue("app");
+                if (appValue != null) {
+                    String app = appValue.stringValue();
+                    apps.add(app);
+                }
+                Value prefFeatureInt = bindingSet.getValue("prefFeature");
+                if (prefFeatureInt != null) {
+                    String featureInt = prefFeatureInt.stringValue();
+                    prefFeature.add(featureInt);
+                }
+                Value prefParamInt = bindingSet.getValue("prefParam");
+                if (prefParamInt != null) {
+                    String paramInt = prefParamInt.stringValue();
+                    prefParam.add(paramInt);
+                }
+
+                user = new User(id, email, givenName, familyName, apps, prefFeature, prefParam);
             }
         } finally {
             repository.shutDown();
@@ -94,6 +140,24 @@ public class UserRepository  {
                 .add(emailProperty, vf.createLiteral(user.getEmail()))
                 .add(givenNameProperty, vf.createLiteral(user.getGivenName()))
                 .add(familyNameProperty, vf.createLiteral(user.getFamilyName()));
+
+        Iterator<String> apps = user.getApps().iterator();
+        while (apps.hasNext()) {
+            String app = apps.next();
+            modelBuilder.add(applicationProperty, vf.createIRI("https://schema.org/MobileApplication/" + app));
+        }
+
+        Iterator<String> featuresInt = user.getPreferredFeatureIntegrations().iterator();
+        while (featuresInt.hasNext()) {
+            String feature = featuresInt.next();
+            modelBuilder.add(preferredFeatureIntegration, vf.createIRI(preferredFeatureIntegration + "/" + feature));
+        }
+
+        Iterator<String> parametersInt = user.getPreferredParameterIntegrations().iterator();
+        while (parametersInt.hasNext()) {
+            String parameter = parametersInt.next();
+            modelBuilder.add(preferredParameterIntegration, vf.createIRI(preferredParameterIntegration + "/" + parameter));
+        }
 
         Model model = modelBuilder.build();
         try (RepositoryConnection connection = repository.getConnection()) {

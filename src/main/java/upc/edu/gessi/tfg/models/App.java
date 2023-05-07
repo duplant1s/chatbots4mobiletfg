@@ -14,8 +14,9 @@ public class App implements Serializable {
     private String datePublished;
     private String dateModified;
     private String softwareVersion;
+    private List<String> features;
 
-    public App(String name, String identifier, String description, String summary, String releaseNotes, AppCategory applicationCategory, String datePublished, String dateModified, String softwareVersion) {
+    public App(String name, String identifier, String description, String summary, String releaseNotes, AppCategory applicationCategory, String datePublished, String dateModified, String softwareVersion, List<String> features) {
         this.name = name;
         this.identifier = identifier;
         this.description = description;
@@ -25,6 +26,7 @@ public class App implements Serializable {
         this.datePublished = datePublished;
         this.dateModified = dateModified;
         this.softwareVersion = softwareVersion;
+        this.features = features;
     }
 
     public String getName() {
@@ -99,7 +101,14 @@ public class App implements Serializable {
         this.softwareVersion = softwareVersion;
     }
 
+    public List<String> getFeatures() {
+        return features;
+    }
 
+    public void setFeatures(List<String> features) {
+        this.features.clear();
+        this.features.addAll(features);
+    }
 
-
+    
 }

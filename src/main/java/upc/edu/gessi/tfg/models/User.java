@@ -12,11 +12,14 @@ public class User implements Serializable {
     private List<String> preferredFeatureIntegrations;
     private List<String> preferredParameterIntegrations;
 
-    public User(String identifier, String email, String givenName, String familyName) {
+    public User(String identifier, String email, String givenName, String familyName, List<String> apps, List<String> preferredFeatureIntegrations, List<String> preferredParameterIntegrations) {
         this.identifier = identifier;
         this.email = email;
         this.givenName = givenName;
         this.familyName = familyName;
+        this.apps = apps;
+        this.preferredFeatureIntegrations = preferredFeatureIntegrations;
+        this.preferredParameterIntegrations = preferredParameterIntegrations;
     }
     
     public String getIdentifier() {

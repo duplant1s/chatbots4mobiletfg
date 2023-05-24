@@ -37,6 +37,7 @@ public class UserRepository  {
     private final IRI applicationProperty = vf.createIRI("https://schema.org/application");
     private final IRI preferredFeatureIntegration = vf.createIRI("https://schema.org/Action");
     private final IRI preferredParameterIntegration = vf.createIRI("https://schema.org/PropertyValue");
+    private final IRI preferredApp = vf.createIRI("https://schema.org/preferredapp");
 
     public UserRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -47,11 +48,16 @@ public class UserRepository  {
         List<User> users = new ArrayList<User>();
 
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = "PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?email ?givenName ?familyName ?app ?prefFeature ?prefParam WHERE { ?user a schema:Person ."+ 
-            "?user schema:identifier ?id . ?user schema:email ?email . ?user schema:givenName ?givenName ."+ 
-            "?user schema:familyName ?familyName . OPTIONAL { ?user schema:application ?app . " + 
-            "?user schema:Action ?prefFeature . ?user schema:PropertyValue ?prefParam } }";
+            String queryString = 
+            "PREFIX schema: <https://schema.org/> "+
+            "SELECT ?id ?email ?givenName ?familyName ?app ?prefFeature ?prefParam ?prefApp " +
+			"WHERE { ?user a schema:Person . "+
+            "?user schema:identifier ?id . ?user schema:email ?email . ?user schema:givenName ?givenName . "+
+            "?user schema:familyName ?familyName . "+
+    		"OPTIONAL { ?user schema:application ?app .} "+
+    		"OPTIONAL {?user schema:Action ?prefFeature .} "+
+    		"OPTIONAL {?user schema:PropertyValue ?prefParam .} "+
+        	"OPTIONAL {?user schema:preferredapp ?prefApp }}";
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
             Map<String, User> userMap = new HashMap<String, User>();
@@ -68,6 +74,8 @@ public class UserRepository  {
                 String prefFeature = prefFeatureInt != null ? prefFeatureInt.stringValue() : null;
                 Value prefParamInt = bindingSet.getValue("prefParam");
                 String prefParam = prefParamInt != null ? prefParamInt.stringValue() : null;
+                Value prefApplication = bindingSet.getValue("prefApp");
+                String prefApp = prefApplication != null ? prefApplication.stringValue() : null;
                 User user;
                 if (userMap.containsKey(id)) {
                     user = userMap.get(id);
@@ -75,7 +83,7 @@ public class UserRepository  {
                     user.getPreferredFeatureIntegrations().add(prefFeature);
                     user.getPreferredParameterIntegrations().add(prefParam);
                 } else {
-                    user = new User(id, email, givenName, familyName, new ArrayList<String>(Arrays.asList(app)), new ArrayList<String>(Arrays.asList(prefFeature)), new ArrayList<String>(Arrays.asList(prefParam)));
+                    user = new User(id, email, givenName, familyName, new ArrayList<String>(Arrays.asList(app)), new ArrayList<String>(Arrays.asList(prefFeature)), new ArrayList<String>(Arrays.asList(prefParam)), new ArrayList<String>(Arrays.asList(prefApp)));
                     userMap.put(id, user);
                 }
             }
@@ -90,17 +98,23 @@ public class UserRepository  {
     public User getUser(String id) {
         User user = null;
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?email ?givenName ?familyName ?app ?prefFeature ?prefParam WHERE { ?user a schema:Person ."+ 
-            "?user schema:identifier '%s' . ?user schema:email ?email . ?user schema:givenName ?givenName ."+ 
-            "?user schema:familyName ?familyName . OPTIONAL { ?user schema:application ?app " + 
-            "?user schema:Action ?prefFeature . ?user schema:PropertyValue ?prefParam} }", id);
+            String queryString = String.format("PREFIX schema: <https://schema.org/>"+
+            "SELECT ?email ?givenName ?familyName ?app ?prefFeature ?prefParam ?prefApp " +
+			"WHERE { ?user a schema:Person ."+
+            "?user schema:identifier '%s' . ?user schema:email ?email . ?user schema:givenName ?givenName ."+
+            "?user schema:familyName ?familyName . "+
+    		"OPTIONAL { ?user schema:application ?app .}"+
+    		"OPTIONAL {?user schema:Action ?prefFeature .}"+
+    		"OPTIONAL {?user schema:PropertyValue ?prefParam .}"+
+        	"OPTIONAL {?user schema:preferredapp ?prefApp }"+
+            "}", id);
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
             
             List<String> apps = new ArrayList<String>();
             List<String> prefFeature = new ArrayList<String>();
             List<String> prefParam = new ArrayList<String>();
+            List<String> prefApps = new ArrayList<String>();
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String email = bindingSet.getValue("email").stringValue();
@@ -121,8 +135,13 @@ public class UserRepository  {
                     String paramInt = prefParamInt.stringValue();
                     prefParam.add(paramInt);
                 }
+                Value prefApplication = bindingSet.getValue("prefApp");
+                if (prefApplication != null) {
+                    String prefApp = prefApplication.stringValue();
+                    prefApps.add(prefApp);
+                }
 
-                user = new User(id, email, givenName, familyName, apps, prefFeature, prefParam);
+                user = new User(id, email, givenName, familyName, apps, prefFeature, prefParam, prefApps);
             }
         } finally {
             repository.shutDown();
@@ -157,6 +176,12 @@ public class UserRepository  {
         while (parametersInt.hasNext()) {
             String parameter = parametersInt.next();
             modelBuilder.add(preferredParameterIntegration, vf.createIRI(preferredParameterIntegration + "/" + parameter));
+        }
+
+        Iterator<String> prefApps = user.getPreferredApps().iterator();
+        while (prefApps.hasNext()) {
+            String prefApp = prefApps.next();
+            modelBuilder.add(preferredApp, vf.createIRI("https://schema.org/MobileApplication/" + prefApp));
         }
 
         Model model = modelBuilder.build();

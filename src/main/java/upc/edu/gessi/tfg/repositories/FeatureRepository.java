@@ -165,4 +165,39 @@ public class FeatureRepository {
         }
 
     }
+
+    // Story #2 - target app selection
+    //     Request app integrations:
+    //     description: request app integrations from selected target feature and previous user preferences
+    //     input: selected target feature (story #1)
+    //     expected output: app list ordered by user preferences of potential integrations from selected target feature with expected parameters and integration from source app
+
+    public List<String> getAppsFromFeature(String feature) {
+        List <String> apps = new ArrayList<String>();
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n"+
+            "SELECT ?appName WHERE {"+
+                "?app a schema:MobileApplication ."+
+                "?app schema:name ?appName ."+
+                "?app schema:keywords ?feature ."+
+                "    ?feature a schema:DefinedTerm;"+
+                "       schema:name '%s'"+
+            "}", feature);
+
+            TupleQuery tupleQuery = connection.prepareTupleQuery(queryString);
+            TupleQueryResult result = tupleQuery.evaluate();
+
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String appName = bindingSet.getValue("appName").stringValue();
+                apps.add(appName);
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+        return apps;
+    }
 }

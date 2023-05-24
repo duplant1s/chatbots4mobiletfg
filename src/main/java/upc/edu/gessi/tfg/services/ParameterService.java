@@ -3,6 +3,7 @@ package upc.edu.gessi.tfg.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,5 +65,10 @@ public class ParameterService {
 
     public void deleteParameterIntegration(String id) {
         parameterIntegrationRepository.deleteParameterIntegration(id);
+    }
+
+    //US3
+    public List<List<Object>> getParameterIntegrations(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
+        return parameterIntegrationRepository.requestParameterIntegration(sourceApp, sourceFeature, targetApp, targetFeature);
     }
 }

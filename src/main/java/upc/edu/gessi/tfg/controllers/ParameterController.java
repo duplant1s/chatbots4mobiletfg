@@ -1,5 +1,9 @@
 package upc.edu.gessi.tfg.controllers;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import upc.edu.gessi.tfg.models.Parameter;
 import upc.edu.gessi.tfg.models.ParameterIntegration;
+import upc.edu.gessi.tfg.models.RequestParameterIntegration;
 import upc.edu.gessi.tfg.services.ParameterService;
 
 @RestController
@@ -80,5 +85,15 @@ public class ParameterController {
     public ResponseEntity<ParameterIntegration> deleteParameterIntegration(@PathVariable String id) {
         parameterService.deleteParameterIntegration(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/integrations/request")
+    public ResponseEntity<List<List<Object>>> getParameterIntegrationsRequest(@RequestBody RequestParameterIntegration request ) {
+        List<List<Object>> paramIntegrations = parameterService.getParameterIntegrations(request.getSourceApp(), request.getSourceFeature(), request.getTargetApp(), request.getTargetFeature());
+
+        if (paramIntegrations == null)
+            return ResponseEntity.notFound().build();
+        
+        return ResponseEntity.ok(paramIntegrations);
     }
 }

@@ -73,4 +73,14 @@ public class FeatureService {
     public void deleteFeatureIntegration(String id) {
         featureIntegrationRepository.deleteFeatureIntegration(id);
     }
+
+    public List<String> getFeatureIntegrationsBySourceFeature(String sourceFeature) {
+        return featureIntegrationRepository.requestIntegrationsTargetFeatures(sourceFeature);
+    }
+
+    //US2
+    public List<String> getAppsByFeature(String feature) {
+        return featureRepository.getAppsFromFeature(feature);
+    }
+
 }

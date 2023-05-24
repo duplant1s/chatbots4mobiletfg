@@ -11,8 +11,9 @@ public class User implements Serializable {
     private List<String> apps;
     private List<String> preferredFeatureIntegrations;
     private List<String> preferredParameterIntegrations;
+    private List<String> preferredApps;
 
-    public User(String identifier, String email, String givenName, String familyName, List<String> apps, List<String> preferredFeatureIntegrations, List<String> preferredParameterIntegrations) {
+    public User(String identifier, String email, String givenName, String familyName, List<String> apps, List<String> preferredFeatureIntegrations, List<String> preferredParameterIntegrations, List<String> preferredApps) {
         this.identifier = identifier;
         this.email = email;
         this.givenName = givenName;
@@ -20,6 +21,7 @@ public class User implements Serializable {
         this.apps = apps;
         this.preferredFeatureIntegrations = preferredFeatureIntegrations;
         this.preferredParameterIntegrations = preferredParameterIntegrations;
+        this.preferredApps = preferredApps;
     }
     
     public String getIdentifier() {
@@ -100,5 +102,21 @@ public class User implements Serializable {
 
     public void removePreferredParameterIntegration(String parameter) {
         this.preferredParameterIntegrations.remove(parameter);
+    }
+
+    public List<String> getPreferredApps() {
+        return preferredApps;
+    }
+
+    public void setPreferredApps(List<String> preferredApps) {
+        this.preferredApps = preferredApps;
+    }
+
+    public void addPreferredApp(String app) {
+        this.preferredApps.add(app);
+    }
+
+    public void removePreferredApp(String app) {
+        this.preferredApps.remove(app);
     }
 }

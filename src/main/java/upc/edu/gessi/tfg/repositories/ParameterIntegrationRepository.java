@@ -1,8 +1,10 @@
 package upc.edu.gessi.tfg.repositories;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -161,4 +163,56 @@ public class ParameterIntegrationRepository {
     }
 
 
+    // Story #3 - parameter integration
+    // Request Parameter Integration:
+    //     description: request source-target parameter integrations for selected app
+    //     input: source app, source feature, selected target app, selected target feature
+    //     expected output: List of (source parameter, target parameter) 
+    public List<List<Object>> requestParameterIntegration(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "SELECT ?sourceParam ?targetParam\n" +
+            "WHERE {\n" +
+              // Define the source app and feature
+              "?sourceApp a schema:MobileApplication;"+
+              "           schema:identifier '%s';"+
+              "           schema:name ?sourceAppName;"+
+              "           schema:keywords ?sourceFeature."+
+              "  ?sourceFeature a schema:DefinedTerm;" +
+              "                 schema:name '%s'." +
+                
+              // Define the target app and feature
+              "   ?targetApp a schema:MobileApplication;"+
+              "           schema:identifier '%s';"+
+              "           schema:name ?targetAppName;"+
+              "           schema:keywords ?targetFeature."+
+              "  ?targetFeature a schema:DefinedTerm;"+
+              "                 schema:name '%s'."+
+                
+              // Find the parameter integrations between the source and target features
+              "?sourceFeature schema:hasPart ?sourceParam."+
+              "?targetFeature schema:hasPart ?targetParam."+
+               
+              "?parameterIntegration a schema:PropertyValue;"+
+              "                        schema:name ?sourceParam;"+
+              "                        schema:value ?targetParam."+    
+            "}", sourceApp, sourceFeature, targetApp, targetFeature);
+
+            TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+            TupleQueryResult result = tupleQuery.evaluate();
+
+            List<List<Object>> parameterIntegrations = new ArrayList<>();
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String sourceParam = bindingSet.getValue("sourceParam").stringValue();
+                String targetParam = bindingSet.getValue("targetParam").stringValue();
+                List<Object> parameterIntegration = Arrays.asList(sourceParam, targetParam);
+                parameterIntegrations.add(parameterIntegration);     
+            }
+
+            return parameterIntegrations;
+        } finally {
+            repository.shutDown();
+        }
+    }
 }

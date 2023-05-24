@@ -18,6 +18,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 
+import upc.edu.gessi.tfg.models.Feature;
 import upc.edu.gessi.tfg.models.FeatureIntegration;
 
 @org.springframework.stereotype.Repository
@@ -27,6 +28,7 @@ public class FeatureIntegrationRepository{
     private Repository repository;
 
     private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
+    private final FeatureRepository featureRepository = new FeatureRepository();
 
     //Feature Integrations IRIs
     private final IRI schemaFeatureIntegrationClassIRI = vf.createIRI("https://schema.org/Action");
@@ -176,4 +178,50 @@ public class FeatureIntegrationRepository{
             repository.shutDown();
         }
     }
+
+    ///////////////////////////////////////////////////////////////
+
+    // Story #1 - target feature selection
+    //     Request feature integrations:
+    //     description: request feature integrations from source features and previous user preferences
+    //     input: source feature
+    //     expected output: feature list ordered by user preferences of potential integrations from source feature
+
+    //     Example:
+    //     request_feature_integrations(“plan_route”) → [“create a task”, “schedule event”, “send an email”]
+
+    public List<String> requestIntegrationsTargetFeatures(String sourceFeature) {
+        List<String> targetFeatures = new ArrayList<String>();
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "SELECT ?targetName "+
+            "WHERE { \n"+
+                "?featureIntegration a schema:Action ."+ 
+                "?featureIntegration schema:source ?source ."+
+                "?source a schema:DefinedTerm;"+
+                    "schema:name '%s' ."+
+                "?featureIntegration schema:target ?target."+
+                "?target a schema:DefinedTerm;"+
+                    "schema:name ?targetName ."+
+            "}", sourceFeature);
+
+            //add that users use a feature
+
+            TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+            TupleQueryResult result = tupleQuery.evaluate();
+
+            while(result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String target = bindingSet.getValue("targetName").stringValue();
+                //the target obtained is a reference to the feature's IRI, so we need to get the feature name only to obtain its properties
+                //target = target.substring(target.lastIndexOf('/') + 1);
+                targetFeatures.add(target);
+            }
+        } finally {
+            repository.shutDown();
+        }
+
+        return targetFeatures;
+    }
+
 }

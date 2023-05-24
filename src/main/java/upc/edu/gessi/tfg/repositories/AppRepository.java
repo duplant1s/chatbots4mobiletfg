@@ -4,6 +4,7 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 
 import upc.edu.gessi.tfg.models.App;
 import upc.edu.gessi.tfg.models.AppCategory;
+import upc.edu.gessi.tfg.models.AppIntegration;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -54,6 +55,10 @@ public class AppRepository {
     private final IRI textIRI = vf.createIRI("https://schema.org/text");
     private final IRI disambiguatingDescriptionIRI = vf.createIRI("https://schema.org/disambiguatingDescription");
 
+    //app integration
+    private final IRI appIntegrationIRI = vf.createIRI("https://schema.org/AppIntegration");
+    private final IRI sourceIRI = vf.createIRI("https://schema.org/source");
+    private final IRI targetIRI = vf.createIRI("https://schema.org/target");
 
     public AppRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -249,5 +254,38 @@ public class AppRepository {
         }
     }
 
+    public void addPreferredAppIntegration(AppIntegration appIntegration) {
 
+        ModelBuilder model = new ModelBuilder();
+        model.setNamespace("schema", "https://schema.org");
+        model.subject("schema:AppIntegration/"+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp())
+            .add(RDF.TYPE, appIntegrationIRI)
+            .add(identifierIRI, appIntegration.getId())
+            .add(sourceIRI, vf.createIRI(schemaAppClassIRI+"/"+appIntegration.getSourceApp()))
+            .add(targetIRI, vf.createIRI(schemaAppClassIRI+"/"+appIntegration.getTargetApp()));
+        
+        Model finalModel = model.build();
+
+        try(RepositoryConnection connection = repository.getConnection()) {
+            connection.add(finalModel);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+    }
+
+    public void removeAppIntegration(AppIntegration appIntegration) {
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" + "DELETE WHERE { ?user a schema:AppIntegration ; schema:identifier '%s' ; ?p ?o }",
+            appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+            update.execute();
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+    }
 }

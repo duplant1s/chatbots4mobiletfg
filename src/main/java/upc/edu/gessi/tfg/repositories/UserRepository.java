@@ -37,7 +37,7 @@ public class UserRepository  {
     private final IRI applicationProperty = vf.createIRI("https://schema.org/application");
     private final IRI preferredFeatureIntegration = vf.createIRI("https://schema.org/Action");
     private final IRI preferredParameterIntegration = vf.createIRI("https://schema.org/PropertyValue");
-    private final IRI preferredApp = vf.createIRI("https://schema.org/preferredapp");
+    private final IRI preferredApp = vf.createIRI("https://schema.org/AppIntegration");
 
     public UserRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -106,7 +106,7 @@ public class UserRepository  {
     		"OPTIONAL { ?user schema:application ?app .}"+
     		"OPTIONAL {?user schema:Action ?prefFeature .}"+
     		"OPTIONAL {?user schema:PropertyValue ?prefParam .}"+
-        	"OPTIONAL {?user schema:preferredapp ?prefApp }"+
+        	"OPTIONAL {?user schema:AppIntegration ?prefApp }"+
             "}", id);
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();

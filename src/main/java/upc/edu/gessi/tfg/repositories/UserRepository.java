@@ -197,10 +197,24 @@ public class UserRepository  {
     public void updateUser(String id, User updatedUser) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" 
-            +"DELETE { ?user schema:identifier ?id ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }"
-            +"INSERT { ?user schema:identifier '%s'; schema:email '%s' ; schema:givenName '%s' ; schema:familyName '%s' }"
-            +"WHERE { ?user a schema:Person ; schema:identifier '%s' ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }", 
-            updatedUser.getIdentifier(), updatedUser.getEmail(), updatedUser.getGivenName(), updatedUser.getFamilyName(), id);
+            +"DELETE {"+
+                "?user schema:email ?oldEmail ;"+
+                      "schema:familyName ?oldFamilyName ."+
+                      "schema:givenName ?oldGivenName . "+
+              "}"+
+              "INSERT {"+
+                "?user schema:email %s ;"+
+                      "schema:givenName %s ;"+
+                      "schema:familyName %s ."+
+              "}"+
+              "WHERE {"+
+                "?user a schema:Person ;"+
+                      "schema:identifier '%s' ."+
+                "}"+
+              "}", updatedUser.getEmail() != null ?updatedUser.getEmail() : "?oldEmail", 
+              updatedUser.getFamilyName() != null ?updatedUser.getFamilyName() : "?oldFamilyName",
+              updatedUser.getGivenName() != null ?updatedUser.getGivenName() : "?oldGivenName");
+
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }

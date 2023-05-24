@@ -70,8 +70,9 @@ public class FeatureService {
         featureIntegrationRepository.updateFeatureIntegration(id, param);
     }
 
-    public void deleteFeatureIntegration(String id) {
-        featureIntegrationRepository.deleteFeatureIntegration(id);
+    public void deleteFeatureIntegration(FeatureIntegration integration) {
+        integration.setId(integration.getSourceFeature()+"/"+integration.getTargetFeature());
+        featureIntegrationRepository.deleteFeatureIntegration(integration);
     }
 
     public List<String> getFeatureIntegrationsBySourceFeature(String sourceFeature) {

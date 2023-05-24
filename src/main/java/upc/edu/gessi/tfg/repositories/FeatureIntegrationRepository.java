@@ -169,9 +169,9 @@ public class FeatureIntegrationRepository{
         }
     }
 
-    public void deleteFeatureIntegration(String id) {
+    public void deleteFeatureIntegration(FeatureIntegration featureIntegration) {
         try(RepositoryConnection connection = repository.getConnection()) {
-            connection.remove(vf.createIRI("https://schema.org/Action/"+id), null, null);
+            connection.remove(vf.createIRI("https://schema.org/Action/"+featureIntegration.getId()), null, null);
         } catch(Exception e) {
             System.out.println(e.getMessage());
         } finally {

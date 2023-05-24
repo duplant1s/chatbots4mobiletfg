@@ -145,14 +145,14 @@ public class ParameterIntegrationRepository {
         }
     }
 
-    public void deleteParameterIntegration(String id) {
+    public void deleteParameterIntegration(ParameterIntegration parameterIntegration) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE WHERE { \n"+
                 "?parameterIntegration a schema:PropertyValue ;"+ 
                 "schema:identifier '%s' ;"+ 
                 "?p ?o"+
-            "}", id);
+            "}", parameterIntegration.getId());
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         } catch (Exception e) {

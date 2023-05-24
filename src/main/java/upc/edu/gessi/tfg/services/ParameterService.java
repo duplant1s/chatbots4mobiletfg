@@ -63,8 +63,9 @@ public class ParameterService {
         parameterIntegrationRepository.updateParameterIntegration(id, param);
     }
 
-    public void deleteParameterIntegration(String id) {
-        parameterIntegrationRepository.deleteParameterIntegration(id);
+    public void deleteParameterIntegration(ParameterIntegration integration) {
+        integration.setId(integration.getSourceParameter()+"/"+integration.getTargetParameter());
+        parameterIntegrationRepository.deleteParameterIntegration(integration);
     }
 
     //US3

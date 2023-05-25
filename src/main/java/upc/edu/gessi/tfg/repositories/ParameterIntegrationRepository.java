@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -19,21 +18,14 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import upc.edu.gessi.tfg.models.ParameterIntegration;
+import upc.edu.gessi.tfg.utils.IRIS;
 
 @org.springframework.stereotype.Repository
 public class ParameterIntegrationRepository {
     private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
     private ParameterRepository parameterRepository = new ParameterRepository();
-
-    private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
     
-    //PARAMETER INTEGRATION IRIs
-    private final IRI schemaParameterIntegrationClassIRI = vf.createIRI("https://schema.org/PropertyValue");
-    private final IRI identifierPropertyIRI = vf.createIRI("https://schema.org/identifier");
-    private final IRI sourcePropertyIRI = vf.createIRI("https://schema.org/name");
-    private final IRI targetPropertyIRI = vf.createIRI("https://schema.org/value");
-
     public ParameterIntegrationRepository() {
         this.repository = new HTTPRepository(repoURL);
         this.repository.init();
@@ -100,14 +92,14 @@ public class ParameterIntegrationRepository {
     
     public void createParameterIntegration(ParameterIntegration parameterIntegration) {
         ModelBuilder builder = new ModelBuilder();
-        builder.setNamespace("schema", "https://schema.org/");
+        builder.setNamespace("schema", IRIS.root);
         builder.subject("schema:PropertyValue/"+parameterIntegration.getId())
-                .add(RDF.TYPE, schemaParameterIntegrationClassIRI)
-                .add(identifierPropertyIRI, vf.createLiteral(parameterIntegration.getId()));
+                .add(RDF.TYPE, IRIS.parameterIntegration)
+                .add(IRIS.identifier, IRIS.createLiteral(parameterIntegration.getId()));
                 String parameterType = parameterRepository.getParameter(parameterIntegration.getSourceParameter()).getType().toString();
-                builder.add(sourcePropertyIRI, vf.createIRI("https://schema.org/"+parameterType+"/"+parameterIntegration.getSourceParameter()));
+                builder.add(IRIS.name, IRIS.createIRI(IRIS.root+parameterType+"/"+parameterIntegration.getSourceParameter()));
                 parameterType = parameterRepository.getParameter(parameterIntegration.getTargetParameter()).getType().toString();
-                builder.add(targetPropertyIRI, vf.createIRI("https://schema.org/"+parameterType+"/"+parameterIntegration.getTargetParameter()));
+                builder.add(IRIS.value, IRIS.createIRI(IRIS.root+parameterType+"/"+parameterIntegration.getTargetParameter()));
 
         Model model = builder.build();
         try (RepositoryConnection connection = repository.getConnection()) {
@@ -145,14 +137,14 @@ public class ParameterIntegrationRepository {
         }
     }
 
-    public void deleteParameterIntegration(ParameterIntegration parameterIntegration) {
+    public void deleteParameterIntegration(String id) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE WHERE { \n"+
                 "?parameterIntegration a schema:PropertyValue ;"+ 
                 "schema:identifier '%s' ;"+ 
                 "?p ?o"+
-            "}", parameterIntegration.getId());
+            "}", id);
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         } catch (Exception e) {
@@ -211,6 +203,51 @@ public class ParameterIntegrationRepository {
             }
 
             return parameterIntegrations;
+        } finally {
+            repository.shutDown();
+        }
+    }
+
+    //USER PREFERENCES
+    public void addPreferredParameterIntegration(String user, ParameterIntegration parameterIntegration) {
+        if (getParameterIntegration(parameterIntegration.getId()) == null) {
+            createParameterIntegration(parameterIntegration);
+        }
+
+        ModelBuilder builder = new ModelBuilder();
+        builder.setNamespace("schema", "https://schema.org/");
+        builder.subject("schema:Person/"+user)
+                .add("https://schema.org/PropertyValue", IRIS.createIRI("https://schema.org/PropertyValue/"+parameterIntegration.getId()));
+        
+        Model model = builder.build();
+        try (RepositoryConnection connection = repository.getConnection()) {
+            connection.add(model);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+    }
+
+    public void removePreferredParameterIntegration(String user, ParameterIntegration parameterIntegration) {
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "DELETE { \n"+
+                "?user schema:PropertyValue ?parameterIntegration ."+
+            "}\n"+
+            "WHERE { \n"+
+                "?user a schema:Person ."+ 
+                "?user schema:identifier '%s' ."+ 
+                "?user schema:PropertyValue ?parameterIntegration ."+
+                "?parameterIntegration schema:identifier '%s' ."+
+            "}", user, parameterIntegration.getId());
+
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+            update.execute();
+
+
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
         } finally {
             repository.shutDown();
         }

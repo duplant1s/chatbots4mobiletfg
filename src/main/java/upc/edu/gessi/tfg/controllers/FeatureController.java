@@ -55,13 +55,6 @@ public class FeatureController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/apps")
-    public ResponseEntity<List<String>> getAppsByFeature(@PathVariable String id) {
-        if (featureService.getFeatureById(id) == null)
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(featureService.getAppsByFeature(id));
-    }
-
     //INTEGRATIONS
 
     @GetMapping("/integrations")
@@ -93,13 +86,5 @@ public class FeatureController {
     public ResponseEntity<FeatureIntegration> deleteFeatureIntegration(@PathVariable String id) {
         featureService.deleteFeatureIntegration(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    @RequestMapping("/integrations/source/{id}")
-    public ResponseEntity<List<String>> getTargetFeatures(@PathVariable String id) {
-        if (featureService.getFeatureById(id) == null)
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(featureService.getFeatureIntegrationsBySourceFeature(id));
     }
 }

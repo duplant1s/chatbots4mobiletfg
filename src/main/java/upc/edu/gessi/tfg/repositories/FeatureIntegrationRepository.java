@@ -1,11 +1,12 @@
 package upc.edu.gessi.tfg.repositories;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -16,29 +17,14 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import org.springframework.data.neo4j.repository.Neo4jRepository;
-
-import upc.edu.gessi.tfg.models.Feature;
 import upc.edu.gessi.tfg.models.FeatureIntegration;
+import upc.edu.gessi.tfg.utils.IRIS;
 
 @org.springframework.stereotype.Repository
 public class FeatureIntegrationRepository{
     
     private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
-
-    private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
-    private final FeatureRepository featureRepository = new FeatureRepository();
-
-    //Feature Integrations IRIs
-    private final IRI schemaFeatureIntegrationClassIRI = vf.createIRI("https://schema.org/Action");
-    private final IRI identifierPropertyIRI = vf.createIRI("https://schema.org/identifier");
-    private final IRI namePropertyIRI = vf.createIRI("https://schema.org/name");
-    private final IRI sourcePropertyIRI = vf.createIRI("https://schema.org/source");
-    private final IRI targetPropertyIRI = vf.createIRI("https://schema.org/target");
-
-    //Feature IRIs
-    private final IRI featureIRI = vf.createIRI("https://schema.org/DefinedTerm");
 
     public FeatureIntegrationRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -115,13 +101,13 @@ public class FeatureIntegrationRepository{
 
     public void createFeatureIntegration(FeatureIntegration featureIntegration) {
         ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.setNamespace("schema", "https://schema.org/");
+        modelBuilder.setNamespace("schema", IRIS.root);
         modelBuilder.subject("schema:Action/"+featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature())
-            .add(RDF.TYPE, schemaFeatureIntegrationClassIRI)
-            .add(identifierPropertyIRI, featureIntegration.getId())
-            .add(namePropertyIRI, featureIntegration.getName())
-            .add(sourcePropertyIRI, vf.createIRI(featureIRI+"/"+featureIntegration.getSourceFeature()))
-            .add(targetPropertyIRI, vf.createIRI(featureIRI+"/"+featureIntegration.getTargetFeature()));
+            .add(RDF.TYPE, IRIS.featureIntegration)
+            .add(IRIS.identifier, featureIntegration.getId())
+            .add(IRIS.name, featureIntegration.getName())
+            .add(IRIS.source, IRIS.createIRI(IRIS.feature+"/"+featureIntegration.getSourceFeature()))
+            .add(IRIS.target, IRIS.createIRI(IRIS.feature+"/"+featureIntegration.getTargetFeature()));
         
         Model model = modelBuilder.build();
 
@@ -169,9 +155,9 @@ public class FeatureIntegrationRepository{
         }
     }
 
-    public void deleteFeatureIntegration(FeatureIntegration featureIntegration) {
+    public void deleteFeatureIntegration(String id) {
         try(RepositoryConnection connection = repository.getConnection()) {
-            connection.remove(vf.createIRI("https://schema.org/Action/"+featureIntegration.getId()), null, null);
+            connection.remove(IRIS.createIRI("https://schema.org/Action/"+id), null, null);
         } catch(Exception e) {
             System.out.println(e.getMessage());
         } finally {
@@ -189,11 +175,75 @@ public class FeatureIntegrationRepository{
 
     //     Example:
     //     request_feature_integrations(“plan_route”) → [“create a task”, “schedule event”, “send an email”]
+    //     PRIORITY
+    //     1. user preferred-integrations
+    //     2. features from user's preferred app integrations
+    //     3. else 
 
-    public List<String> requestIntegrationsTargetFeatures(String sourceFeature) {
-        List<String> targetFeatures = new ArrayList<String>();
+    public List<String> requestIntegrationsTargetFeatures(String userID, String sourceFeature) {
+        List<String> sortedTargetFeatures = new ArrayList<String>();
+        Map<String, Integer> targetFeaturesMap = new HashMap<String, Integer>();
+
         try (RepositoryConnection connection = repository.getConnection()) {
+
+            //Firstly, we check for the user's preferred integrations, 
+            //assigning them the highest priority of 3.
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "SELECT ?targetName "+
+            "WHERE {\n"+
+                "?user a schema:Person ."+ 
+                "?user schema:identifier '%s' ."+ 
+                "?user schema:Action ?preferredIntegration ."+ 
+                "?preferredIntegration a schema:Action ."+ 
+                "?preferredIntegration schema:source ?sourceFeature ."+ 
+                "?sourceFeature schema:name '%s' ."+ 
+                "?preferredIntegration schema:target ?targetFeature ."+ 
+                "?targetFeature schema:name ?targetName ."+
+            "}", userID, sourceFeature);
+            
+            TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+            TupleQueryResult result = tupleQuery.evaluate();
+
+            while(result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String targetName = bindingSet.getValue("targetName").stringValue();
+                targetFeaturesMap.put(targetName, 3);
+            }
+
+            //Secondly, we check for the user's preferred apps integrations, considering 
+            //that the source app has to have the sourceFeature as a feature.
+            //We will assign this a value of 2.
+            queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "SELECT ?targetName "+
+            "WHERE {\n"+
+                "?user a schema:Person ."+
+                "?user schema:identifier '%s' ."+
+                "?user schema:AppIntegration ?appIntegration ."+
+                "?appIntegration a schema:AppIntegration ."+
+                "?appIntegration schema:source ?sourceApp ."+
+                "?sourceApp a schema:MobileApplication ."+
+                "?sourceApp schema:DefinedTerm ?sourceFeature ."+
+                "?sourceFeature schema:name '%s' ."+
+                "?appIntegration schema:target ?targetApp ."+
+                "?targetApp a schema:MobileApplication ."+
+                "?targetApp schema:DefinedTerm ?targetFeature ."+
+                "?targetFeature schema:name ?targetName ."+
+            "}", userID, sourceFeature);
+
+            tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+            result = tupleQuery.evaluate();
+
+            while(result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String target = bindingSet.getValue("targetName").stringValue();
+                //the target obtained is a reference to the feature's IRI, so we need to get the feature name only to obtain its properties
+                //target = target.substring(target.lastIndexOf('/') + 1);
+                targetFeaturesMap.put(target, targetFeaturesMap.get(target) + 2);
+            }
+
+            //Lastly, we obtain all the target features that are part of a feature integration
+            //with the source feature. We will assign this a value of 1.
+            queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "SELECT ?targetName "+
             "WHERE { \n"+
                 "?featureIntegration a schema:Action ."+ 
@@ -205,23 +255,77 @@ public class FeatureIntegrationRepository{
                     "schema:name ?targetName ."+
             "}", sourceFeature);
 
-            //add that users use a feature
-
-            TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
-            TupleQueryResult result = tupleQuery.evaluate();
+            tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+            result = tupleQuery.evaluate();
 
             while(result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String target = bindingSet.getValue("targetName").stringValue();
                 //the target obtained is a reference to the feature's IRI, so we need to get the feature name only to obtain its properties
                 //target = target.substring(target.lastIndexOf('/') + 1);
-                targetFeatures.add(target);
+                targetFeaturesMap.put(target, targetFeaturesMap.get(target) + 1);
             }
+
+            //We sort the target features by their priority
+            List<Map.Entry<String, Integer>> list = new ArrayList<>(targetFeaturesMap.entrySet());
+
+            list.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+            for (Map.Entry<String, Integer> entry : list) {
+                sortedTargetFeatures.add(entry.getKey());
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         } finally {
             repository.shutDown();
         }
 
-        return targetFeatures;
+        return sortedTargetFeatures;
     }
 
+
+    //USER PREFERENCES
+    public void addPreferredFeatureIntegration(String user, FeatureIntegration featureIntegration) {
+        if (getFeatureIntegration(featureIntegration.getId()) == null) {
+            createFeatureIntegration(featureIntegration);
+        }
+
+        ModelBuilder modelBuilder = new ModelBuilder();
+        modelBuilder.setNamespace("schema", "https://schema.org/");
+        modelBuilder.subject("schema:Person/"+user)
+            .add("schema:Action", "https://schema.org/Action"+featureIntegration.getId());
+
+        Model model = modelBuilder.build();
+
+        try(RepositoryConnection connection = repository.getConnection()) {
+            connection.add(model);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+    }
+
+    public void removePreferredAppIntegration(String user, FeatureIntegration featureIntegration){
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "DELETE { \n"+
+                "?user schema:Action ?featureIntegration ."+
+            "}\n"+
+            "WHERE { \n"+
+                "?user a schema:Person ."+ 
+                "?user schema:identifier '%s' ."+ 
+                "?user schema:Action ?featureIntegration ."+
+                "?featureIntegration schema:identifier '%s' ."+
+            "}", user, featureIntegration.getId());
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+            update.execute();
+        }
+        catch(Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+    }
 }

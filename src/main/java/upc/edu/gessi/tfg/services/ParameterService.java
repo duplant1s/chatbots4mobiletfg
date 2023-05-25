@@ -22,6 +22,7 @@ public class ParameterService {
     private ParameterIntegrationRepository parameterIntegrationRepository;
 
     //PARAMETERS
+    //CRUDS/////////////////
     public List<Parameter> getAllParameters() {
         return parameterRepository.getAllParameters();
     }
@@ -45,8 +46,12 @@ public class ParameterService {
     public void deleteParameter(String id) {
         parameterRepository.deleteParameter(id);
     }
+    
 
     //PARAMETER_INTEGRATIONS
+
+    ////////////////////////
+    //CRUDS/////////////////
     public List<ParameterIntegration> getAllParameterIntegrations() {
         return parameterIntegrationRepository.getAllParameterIntegrations();
     }
@@ -63,10 +68,11 @@ public class ParameterService {
         parameterIntegrationRepository.updateParameterIntegration(id, param);
     }
 
-    public void deleteParameterIntegration(ParameterIntegration integration) {
-        integration.setId(integration.getSourceParameter()+"/"+integration.getTargetParameter());
-        parameterIntegrationRepository.deleteParameterIntegration(integration);
+    public void deleteParameterIntegration(String id) {
+        parameterIntegrationRepository.deleteParameterIntegration(id);
     }
+
+    ////////////////////////
 
     //US3
     public List<List<Object>> getParameterIntegrations(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {

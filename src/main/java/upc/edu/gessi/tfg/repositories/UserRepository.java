@@ -1,7 +1,7 @@
 package upc.edu.gessi.tfg.repositories;
 
 import upc.edu.gessi.tfg.models.User;
-
+import upc.edu.gessi.tfg.utils.IRIS;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -25,19 +25,6 @@ public class UserRepository  {
 
     private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
-
-    private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
-
-
-    private final IRI schemaPersonClass = vf.createIRI("https://schema.org/Person");
-    private final IRI identifierProperty = vf.createIRI("https://schema.org/identifier");
-    private final IRI emailProperty = vf.createIRI("https://schema.org/email");
-    private final IRI givenNameProperty = vf.createIRI("https://schema.org/givenName");
-    private final IRI familyNameProperty = vf.createIRI("https://schema.org/familyName");
-    private final IRI applicationProperty = vf.createIRI("https://schema.org/application");
-    private final IRI preferredFeatureIntegration = vf.createIRI("https://schema.org/Action");
-    private final IRI preferredParameterIntegration = vf.createIRI("https://schema.org/PropertyValue");
-    private final IRI preferredApp = vf.createIRI("https://schema.org/AppIntegration");
 
     public UserRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -152,36 +139,36 @@ public class UserRepository  {
 
     public void createUser(User user) {
         ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.setNamespace("schema", "https://schema.org/");
+        modelBuilder.setNamespace("schema", IRIS.root);
         modelBuilder.subject("schema:Person/" + user.getIdentifier())
-                .add(RDF.TYPE, schemaPersonClass)
-                .add(identifierProperty, vf.createLiteral(user.getIdentifier()))
-                .add(emailProperty, vf.createLiteral(user.getEmail()))
-                .add(givenNameProperty, vf.createLiteral(user.getGivenName()))
-                .add(familyNameProperty, vf.createLiteral(user.getFamilyName()));
+                .add(RDF.TYPE, IRIS.person)
+                .add(IRIS.identifier, IRIS.createLiteral(user.getIdentifier()))
+                .add(IRIS.email, IRIS.createLiteral(user.getEmail()))
+                .add(IRIS.givenName, IRIS.createLiteral(user.getGivenName()))
+                .add(IRIS.familyName, IRIS.createLiteral(user.getFamilyName()));
 
         Iterator<String> apps = user.getApps().iterator();
         while (apps.hasNext()) {
             String app = apps.next();
-            modelBuilder.add(applicationProperty, vf.createIRI("https://schema.org/MobileApplication/" + app));
+            modelBuilder.add(IRIS.application, IRIS.createIRI(IRIS.mobileApplication+"/" + app));
         }
 
         Iterator<String> featuresInt = user.getPreferredFeatureIntegrations().iterator();
         while (featuresInt.hasNext()) {
             String feature = featuresInt.next();
-            modelBuilder.add(preferredFeatureIntegration, vf.createIRI(preferredFeatureIntegration + "/" + feature));
+            modelBuilder.add(IRIS.featureIntegration, IRIS.createIRI(IRIS.featureIntegration + "/" + feature));
         }
 
         Iterator<String> parametersInt = user.getPreferredParameterIntegrations().iterator();
         while (parametersInt.hasNext()) {
             String parameter = parametersInt.next();
-            modelBuilder.add(preferredParameterIntegration, vf.createIRI(preferredParameterIntegration + "/" + parameter));
+            modelBuilder.add(IRIS.parameterIntegration, IRIS.createIRI(IRIS.parameterIntegration + "/" + parameter));
         }
 
         Iterator<String> prefApps = user.getPreferredApps().iterator();
         while (prefApps.hasNext()) {
             String prefApp = prefApps.next();
-            modelBuilder.add(preferredApp, vf.createIRI("https://schema.org/MobileApplication/" + prefApp));
+            modelBuilder.add(IRIS.appIntegration, IRIS.createIRI(IRIS.mobileApplication +"/" + prefApp));
         }
 
         Model model = modelBuilder.build();

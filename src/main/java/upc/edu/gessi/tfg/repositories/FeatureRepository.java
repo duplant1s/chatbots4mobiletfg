@@ -21,6 +21,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import upc.edu.gessi.tfg.models.Feature;
+import upc.edu.gessi.tfg.utils.IRIS;
 
 @org.springframework.stereotype.Repository
 public class FeatureRepository {
@@ -29,14 +30,6 @@ public class FeatureRepository {
     private Repository repository;
 
     private ParameterRepository parameterRepository = new ParameterRepository();
-
-    private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
-
-    //Features IRIs
-    private final IRI schemaFeatureClassIRI = vf.createIRI("https://schema.org/DefinedTerm");
-    private final IRI identifierPropertyIRI = vf.createIRI("https://schema.org/identifier");
-    private final IRI namePropertyIRI = vf.createIRI("https://schema.org/name");
-    private final IRI hasPartPropertyIRI = vf.createIRI("https://schema.org/hasPart");
 
     public FeatureRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -110,14 +103,14 @@ public class FeatureRepository {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.setNamespace("schema", "https://schema.org/");
         modelBuilder.subject("schema:DefinedTerm/"+feature.getId())
-            .add(RDF.TYPE, schemaFeatureClassIRI)
-            //.add(identifierPropertyIRI, vf.createLiteral(feature.getId()))
-            .add(namePropertyIRI, vf.createLiteral(feature.getName()));
+            .add(RDF.TYPE, IRIS.feature)
+            .add(IRIS.identifier, IRIS.createLiteral(feature.getId()))
+            .add(IRIS.name, IRIS.createLiteral(feature.getName()));
         Iterator<String> it = feature.getParameters().iterator();
         while (it.hasNext()) {
             String parameter = it.next();
             String paramType = parameterRepository.getParameter(parameter).getType().toString();
-            modelBuilder.add(hasPartPropertyIRI, vf.createIRI("https://schema.org/"+paramType+"/"+parameter));
+            modelBuilder.add(IRIS.hasPart, IRIS.createIRI("https://schema.org/"+paramType+"/"+parameter));
         }
         
         Model model = modelBuilder.build();
@@ -164,40 +157,5 @@ public class FeatureRepository {
             repository.shutDown();
         }
 
-    }
-
-    // Story #2 - target app selection
-    //     Request app integrations:
-    //     description: request app integrations from selected target feature and previous user preferences
-    //     input: selected target feature (story #1)
-    //     expected output: app list ordered by user preferences of potential integrations from selected target feature with expected parameters and integration from source app
-
-    public List<String> getAppsFromFeature(String feature) {
-        List <String> apps = new ArrayList<String>();
-        try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n"+
-            "SELECT ?appName WHERE {"+
-                "?app a schema:MobileApplication ."+
-                "?app schema:name ?appName ."+
-                "?app schema:keywords ?feature ."+
-                "    ?feature a schema:DefinedTerm;"+
-                "       schema:name '%s'"+
-            "}", feature);
-
-            TupleQuery tupleQuery = connection.prepareTupleQuery(queryString);
-            TupleQueryResult result = tupleQuery.evaluate();
-
-            while (result.hasNext()) {
-                BindingSet bindingSet = result.next();
-                String appName = bindingSet.getValue("appName").stringValue();
-                apps.add(appName);
-            }
-        }
-        catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            repository.shutDown();
-        }
-        return apps;
     }
 }

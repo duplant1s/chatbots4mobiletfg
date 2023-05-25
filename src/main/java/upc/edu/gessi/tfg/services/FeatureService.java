@@ -23,6 +23,7 @@ public class FeatureService {
     private FeatureIntegrationRepository featureIntegrationRepository;
 
     //Features
+    //CRUDS/////////////////
     public List<Feature> getAllFeatures() {
         return featureRepository.getAllFeatures();
     }
@@ -48,6 +49,7 @@ public class FeatureService {
     }
 
     //Feature_INTEGRATIONS
+    //CRUDS/////////////////
     public List<FeatureIntegration> getAllFeatureIntegrations() {
         return featureIntegrationRepository.getAllFeatureIntegrations();
     }
@@ -70,18 +72,7 @@ public class FeatureService {
         featureIntegrationRepository.updateFeatureIntegration(id, param);
     }
 
-    public void deleteFeatureIntegration(FeatureIntegration integration) {
-        integration.setId(integration.getSourceFeature()+"/"+integration.getTargetFeature());
-        featureIntegrationRepository.deleteFeatureIntegration(integration);
+    public void deleteFeatureIntegration(String id) {
+        featureIntegrationRepository.deleteFeatureIntegration(id);
     }
-
-    public List<String> getFeatureIntegrationsBySourceFeature(String sourceFeature) {
-        return featureIntegrationRepository.requestIntegrationsTargetFeatures(sourceFeature);
-    }
-
-    //US2
-    public List<String> getAppsByFeature(String feature) {
-        return featureRepository.getAppsFromFeature(feature);
-    }
-
 }

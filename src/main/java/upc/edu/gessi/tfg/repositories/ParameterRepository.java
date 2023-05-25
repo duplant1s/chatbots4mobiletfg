@@ -2,6 +2,7 @@ package upc.edu.gessi.tfg.repositories;
 
 import upc.edu.gessi.tfg.models.ParamType;
 import upc.edu.gessi.tfg.models.Parameter;
+import upc.edu.gessi.tfg.utils.IRIS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,26 +20,13 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import org.springframework.data.neo4j.repository.Neo4jRepository;
 
 @org.springframework.stereotype.Repository
 public class ParameterRepository {
 
     private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
-
-    private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
     
-    //PARAMETER IRIs, 1 per possible type of parameter
-    private final IRI booleanIRI = vf.createIRI("https://schema.org/Boolean");
-    private final IRI numberIRI = vf.createIRI("https://schema.org/Number");
-    private final IRI textIRI = vf.createIRI("https://schema.org/Text");
-    private final IRI geoCoordinatesIRI = vf.createIRI("https://schema.org/GeoCoordinates");
-    private final IRI contactPointIRI = vf.createIRI("https://schema.org/ContactPoint");
-
-    private final IRI nameIRI = vf.createIRI("https://schema.org/name");
-    private final IRI identifierIRI = vf.createIRI("https://schema.org/identifier");
-
     public ParameterRepository() {
         this.repository = new HTTPRepository(repoURL);
         this.repository.init();
@@ -104,25 +92,25 @@ public class ParameterRepository {
 
     public void createParameter(Parameter parameter) {
         ModelBuilder builder = new ModelBuilder();
-        builder.setNamespace("schema", "https://schema.org/");
+        builder.setNamespace("schema", IRIS.root);
         builder.subject("schema:"+parameter.getType()+"/"+parameter.getIdentifier())
             .add("schema:name", parameter.getName())
             .add("schema:identifier", parameter.getIdentifier());
         switch (parameter.getType()) {
             case Number:
-                builder.add(RDF.TYPE, numberIRI);
+                builder.add(RDF.TYPE, IRIS.number);
                 break;
             case Boolean:
-                builder.add(RDF.TYPE, booleanIRI);
+                builder.add(RDF.TYPE, IRIS.bool);
                 break;
             case Text:
-                builder.add(RDF.TYPE, textIRI);
+                builder.add(RDF.TYPE, IRIS.text);
                 break;
             case GeoCoordinates:
-                builder.add(RDF.TYPE, geoCoordinatesIRI);
+                builder.add(RDF.TYPE, IRIS.geoCoordinates);
                 break;
             case ContactPoint:
-                builder.add(RDF.TYPE, contactPointIRI);
+                builder.add(RDF.TYPE, IRIS.contactPoint);
                 break;
             default:
                 break;

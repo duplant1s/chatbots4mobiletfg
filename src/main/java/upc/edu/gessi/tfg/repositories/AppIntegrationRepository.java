@@ -105,6 +105,32 @@ public class AppIntegrationRepository {
         }
     }
 
+    public void updateAppIntegration(String id, AppIntegration appIntegration) {
+        try (RepositoryConnection connection = repository.getConnection()) {
+            StringBuilder queryString = new StringBuilder();
+            queryString.append("PREFIX schema: <https://schema.org/>\n");
+            queryString.append("DELETE { \n");
+            queryString.append("?appIntegration a schema:AppIntegration ;\n");
+            queryString.append("schema:source ?source ;\n");
+            queryString.append("schema:target ?target .\n");
+            queryString.append("}\n");
+            queryString.append("INSERT { \n");
+            queryString.append("?appIntegration a schema:AppIntegration ;\n");
+            queryString.append("schema:source <"+appIntegration.getSourceApp()+"> ;\n");
+            queryString.append("schema:target <"+appIntegration.getTargetApp()+"> .\n");
+            queryString.append("}\n");
+            queryString.append("WHERE { \n");
+            queryString.append("?appIntegration a schema:AppIntegration ;\n");
+            queryString.append("schema:identifier '"+id+"' ;\n");
+            queryString.append("schema:source ?source ;\n");
+            queryString.append("schema:target ?target .\n");
+            queryString.append("}");
+
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());
+            update.execute();
+        }
+    }
+
     public void removeAppIntegration(AppIntegration appIntegration) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" + "DELETE WHERE { ?user a schema:AppIntegration ; schema:identifier '%s' ; ?p ?o }",

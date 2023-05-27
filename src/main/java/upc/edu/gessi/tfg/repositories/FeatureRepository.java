@@ -125,16 +125,33 @@ public class FeatureRepository {
 
 
 
-    //TODOOOOOOOOOOOOOOOOOOOOOOO
     public void updateFeature(String id, Feature updatedFeature) {
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "DELETE { ?feature schema:name ?name }" +
-            "INSERT { ?feature schema:name '%s' }" +
-            "WHERE { <https://schema.org/%s> a schema:DefinedTerm . ?feature schema:name ?name }", updatedFeature.getName(), id);
+            StringBuilder queryString = new StringBuilder();
+            queryString.append("PREFIX schema: <https://schema.org/>\n");
+            queryString.append("DELETE { \n");
+            queryString.append("?feature schema:name ?name ; \n");
+            queryString.append("         schema:hasPart ?parameter . \n");
+            queryString.append("} \n");
+            queryString.append("INSERT { \n");
+            queryString.append("?feature schema:name '"+updatedFeature.getName()+"' ; \n");
+            Iterator<String> it = updatedFeature.getParameters().iterator();
+            while (it.hasNext()) {
+                String parameter = it.next();
+                String paramType = parameterRepository.getParameter(parameter).getType().toString();
+                queryString.append("         schema:hasPart <https://schema.org/"+paramType+"/"+parameter+"> ; \n");
+            }
+            queryString.append("} \n");
+            queryString.append("WHERE { \n");
+            queryString.append("?feature a schema:DefinedTerm ; \n");
+            queryString.append("         schema:identifier '"+id+"' ; \n");
+            queryString.append("         schema:name ?name ; \n");
+            queryString.append("         schema:hasPart ?parameter . \n");
+            queryString.append("} \n");
 
-            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());
             update.execute();
+
         } 
         catch(Exception e) {
             System.out.println(e.getMessage());

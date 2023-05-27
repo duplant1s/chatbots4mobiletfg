@@ -254,16 +254,15 @@ public class UserRepository  {
             queryString.append("?user schema:identifier '");
             queryString.append(id);
             queryString.append("' .\n");
-            queryString.append("?user schema:email ?oldEmail .\n");
-            queryString.append("?user schema:familyName ?oldFamilyName .\n");
-            queryString.append("?user schema:givenName ?oldGivenName . \n");
+            queryString.append("OPTIONAL {?user schema:email ?oldEmail }\n");
+            queryString.append("OPTIONAL {?user schema:familyName ?oldFamilyName }\n");
+            queryString.append("OPTIONAL {?user schema:givenName ?oldGivenName }\n");
             queryString.append("OPTIONAL {?user schema:application ?oldApps }\n");
             queryString.append("OPTIONAL {?user schema:Action ?oldPrefFeatures }\n");
             queryString.append("OPTIONAL {?user schema:PropertyValue ?oldPrefParams }\n");
             queryString.append("OPTIONAL {?user schema:AppIntegration ?oldPrefApps }\n");
             queryString.append("}");
 
-            String test = queryString.toString();
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());
 

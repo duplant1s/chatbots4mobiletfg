@@ -6,7 +6,6 @@ public class Parameter implements Serializable {
     private String identifier;
     private String name;
     private ParamType type;
-    private Object value;
 
     public Parameter(String identifier, String name, ParamType type) {
         this.identifier = identifier;
@@ -37,13 +36,4 @@ public class Parameter implements Serializable {
     public void setType(ParamType type) {
         this.type = type;
     }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
-    
 }

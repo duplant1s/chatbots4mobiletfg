@@ -192,12 +192,54 @@ public class AppRepository {
         }
     }
 
-    //TODOOOOOOOOOOOOOOOOOOOOO
     public void updateApp(String id, App updatedApp) {
         try (RepositoryConnection connection = repository.getConnection()) {
-            //String queryString = String.format("DELETE { ?user schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName } INSERT { ?user schema:email '%s' ; schema:givenName '%s' ; schema:familyName '%s' } WHERE { ?user a schema:Person ; schema:identifier '%s' ; schema:email ?email ; schema:givenName ?givenName ; schema:familyName ?familyName }", updatedUser.getEmail(), updatedUser.getGivenName(), updatedUser.getFamilyName(), id);
-            //Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
-            //update.execute();
+            StringBuilder queryString = new StringBuilder();
+            queryString.append("PREFIX schema: <https://schema.org/>\n");
+            queryString.append("DELETE { \n");
+            queryString.append("?app a schema:MobileApplication ; \n");
+            queryString.append("schema:name ?name ; \n");
+            queryString.append("schema:description ?desc ; \n");
+            queryString.append("schema:abstract ?summ ; \n");
+            queryString.append("schema:releaseNotes ?releaseNotes ; \n");
+            queryString.append("schema:applicationCategory ?applicationCategory ; \n");
+            queryString.append("schema:datePublished ?datePublished ; \n");
+            queryString.append("schema:dateModified ?dateModified ; \n");
+            queryString.append("schema:softwareVersion ?softwareVersion ; \n");
+            queryString.append("schema:keywords ?feature . \n");
+            queryString.append("} \n");
+            queryString.append("INSERT { \n");
+            queryString.append("?app a schema:MobileApplication ; \n");
+            queryString.append("schema:name '"+updatedApp.getName()+"' ; \n");
+            queryString.append("schema:description '"+updatedApp.getDescription()+"' ; \n");
+            queryString.append("schema:abstract '"+updatedApp.getSummary()+"' ; \n");
+            queryString.append("schema:releaseNotes '"+updatedApp.getReleaseNotes()+"' ; \n");
+            queryString.append("schema:applicationCategory '"+updatedApp.getApplicationCategory().toString()+"' ; \n");
+            queryString.append("schema:datePublished '"+updatedApp.getDatePublished()+"' ; \n");
+            queryString.append("schema:dateModified '"+updatedApp.getDateModified()+"' ; \n");
+            queryString.append("schema:softwareVersion '"+updatedApp.getSoftwareVersion()+"' ; \n");
+            Iterator<String> features = updatedApp.getFeatures().iterator();
+            while (features.hasNext()) {
+                String nextFeature = features.next();
+                queryString.append("schema:keywords '"+nextFeature+"' ; \n");
+            }
+            queryString.append("} \n");
+            queryString.append("WHERE { \n");
+            queryString.append("?app a schema:MobileApplication ; \n");
+            queryString.append("schema:identifier '"+id+"' ; \n");
+            queryString.append("schema:name ?name ; \n");
+            queryString.append("schema:description ?desc ; \n");
+            queryString.append("schema:abstract ?summ ; \n");
+            queryString.append("schema:releaseNotes ?releaseNotes ; \n");
+            queryString.append("schema:applicationCategory ?applicationCategory ; \n");
+            queryString.append("schema:datePublished ?datePublished ; \n");
+            queryString.append("schema:dateModified ?dateModified ; \n");
+            queryString.append("schema:softwareVersion ?softwareVersion ; \n");
+            queryString.append("schema:keywords ?feature . \n");
+            queryString.append("} \n");
+
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());
+            update.execute();
         }
         catch (Exception e) {
             System.out.println(e.getMessage());

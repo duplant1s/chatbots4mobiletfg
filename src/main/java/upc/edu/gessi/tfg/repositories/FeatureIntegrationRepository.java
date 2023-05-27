@@ -126,13 +126,11 @@ public class FeatureIntegrationRepository{
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+
-                "?featureIntegration schema:identifier ?identifier ."+
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
             "}\n"+
             "INSERT { \n"+
-                "?featureIntegration schema:identifier '%s' ."+
                 "?featureIntegration schema:name '%s' ."+
                 "?featureIntegration schema:source '%s' ."+
                 "?featureIntegration schema:target '%s'"+

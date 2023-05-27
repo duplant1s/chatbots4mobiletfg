@@ -113,8 +113,6 @@ public class ParameterIntegrationRepository {
         }
     }
 
-
-    //TODOOOOOOOOOOOOOOOOOOO
     public void updateParameterIntegration(String id, ParameterIntegration parameterIntegration) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
@@ -123,17 +121,19 @@ public class ParameterIntegrationRepository {
                 "?parameterIntegration schema:value ?target"+
             "}\n"+
             "INSERT { \n"+
-                "?parameterIntegration schema:name ?source ."+
-                "?parameterIntegration schema:value ?target"+
+                "?parameterIntegration schema:name '%s'. "+
+                "?parameterIntegration schema:value '%s' "+
             "}\n"+
             "WHERE { \n"+
                 "?parameterIntegration a schema:PropertyValue ."+ 
-                "?parameterIntegration schema:identifier ?id ."+ 
+                "?parameterIntegration schema:identifier '%s' ."+ 
                 "?parameterIntegration schema:name ?source ."+
                 "?parameterIntegration schema:value ?target"+
-            "}", parameterIntegration.getId(), parameterIntegration.getSourceParameter(), parameterIntegration.getTargetParameter());
-            TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
-            tupleQuery.evaluate();
+            "}", parameterIntegration.getSourceParameter(), parameterIntegration.getTargetParameter(), id);
+
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+            update.execute();
+            
         } finally {
             repository.shutDown();
         }

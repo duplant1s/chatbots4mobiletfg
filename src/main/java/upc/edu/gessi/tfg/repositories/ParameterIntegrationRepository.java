@@ -2,7 +2,9 @@ package upc.edu.gessi.tfg.repositories;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -97,9 +99,9 @@ public class ParameterIntegrationRepository {
                 .add(RDF.TYPE, IRIS.parameterIntegration)
                 .add(IRIS.identifier, IRIS.createLiteral(parameterIntegration.getId()));
                 String parameterType = parameterRepository.getParameter(parameterIntegration.getSourceParameter()).getType().toString();
-                builder.add(IRIS.name, IRIS.createIRI(IRIS.root+parameterType+"/"+parameterIntegration.getSourceParameter()));
+                builder.add(IRIS.name, IRIS.createCustomIRI(IRIS.root+parameterType+"/"+parameterIntegration.getSourceParameter()));
                 parameterType = parameterRepository.getParameter(parameterIntegration.getTargetParameter()).getType().toString();
-                builder.add(IRIS.value, IRIS.createIRI(IRIS.root+parameterType+"/"+parameterIntegration.getTargetParameter()));
+                builder.add(IRIS.value, IRIS.createCustomIRI(IRIS.root+parameterType+"/"+parameterIntegration.getTargetParameter()));
 
         Model model = builder.build();
         try (RepositoryConnection connection = repository.getConnection()) {
@@ -208,6 +210,54 @@ public class ParameterIntegrationRepository {
         }
     }
 
+    // Story #4 - custom parameters
+    // Request custom parameter:
+    // description: request custom parameters for selected app
+    // input: source app, source feature, selected target app, selected target feature
+    // expected output: List of custom target parameters (optional field)
+    public List<String> requestCustomParameters(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
+        List<String> customParameters = new ArrayList<>();
+        try (RepositoryConnection connection = repository.getConnection()) {
+            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            "SELECT ?targetParamId\n" +
+            "WHERE {"+
+                "?sourceApp a schema:MobileApplication;"+
+                "           schema:identifier '%s';"+
+                "           schema:keywords ?sourceFeature ."+
+                "?sourceFeature a schema:DefinedTerm;"+
+                "         schema:name '%s'."+
+                "?sourceFeature schema:hasPart ?sourceParam."+
+                "?sourceParam schema:identifier ?sourceParamId."+
+                "?targetApp a schema:MobileApplication;"+
+                "           schema:identifier '%s';"+
+                "           schema:keywords ?targetFeature ."+
+                "?targetFeature a schema:DefinedTerm;"+
+                "         schema:name '%s'."+
+                "?targetFeature schema:hasPart ?targetParam."+
+                "?targetParam schema:identifier ?targetParamId."+
+                "FILTER NOT EXISTS {"+
+                "   ?parameterIntegration a schema:PropertyValue;"+
+                "                        schema:name ?sourceParamId;"+
+                "                        schema:value ?targetParamId."+
+                "}"+
+            "}", sourceApp, sourceFeature, targetApp, targetFeature);
+
+            TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+            TupleQueryResult result = tupleQuery.evaluate();
+
+            while(result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String targetParamId = bindingSet.getValue("targetParamId").stringValue();
+                customParameters.add(targetParamId);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            repository.shutDown();
+        }
+        return customParameters;
+    }
+
     //USER PREFERENCES
     public void addPreferredParameterIntegration(String user, ParameterIntegration parameterIntegration) {
         if (getParameterIntegration(parameterIntegration.getId()) == null) {
@@ -217,7 +267,7 @@ public class ParameterIntegrationRepository {
         ModelBuilder builder = new ModelBuilder();
         builder.setNamespace("schema", "https://schema.org/");
         builder.subject("schema:Person/"+user)
-                .add("https://schema.org/PropertyValue", IRIS.createIRI("https://schema.org/PropertyValue/"+parameterIntegration.getId()));
+                .add("https://schema.org/PropertyValue", IRIS.createCustomIRI("https://schema.org/PropertyValue/"+parameterIntegration.getId()));
         
         Model model = builder.build();
         try (RepositoryConnection connection = repository.getConnection()) {

@@ -91,8 +91,8 @@ public class AppIntegrationRepository {
         model.subject("schema:AppIntegration/"+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp())
             .add(RDF.TYPE, IRIS.appIntegration)
             .add(IRIS.identifier, appIntegration.getId())
-            .add(IRIS.source, IRIS.createIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
-            .add(IRIS.target, IRIS.createIRI(IRIS.mobileApplication+"/"+appIntegration.getTargetApp()));
+            .add(IRIS.source, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
+            .add(IRIS.target, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getTargetApp()));
         
         Model finalModel = model.build();
 
@@ -234,7 +234,7 @@ public class AppIntegrationRepository {
         ModelBuilder model = new ModelBuilder();
         model.setNamespace("schema", IRIS.root);
         model.subject("schema:Person/"+user)
-            .add(IRIS.createIRI(IRIS.appIntegration), IRIS.createIRI(IRIS.appIntegration+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp()));
+            .add(IRIS.appIntegration, IRIS.createCustomIRI(IRIS.appIntegration+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp()));
         
         Model finalModel = model.build();
         

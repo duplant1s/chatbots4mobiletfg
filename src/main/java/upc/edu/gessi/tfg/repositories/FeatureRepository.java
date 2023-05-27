@@ -110,7 +110,7 @@ public class FeatureRepository {
         while (it.hasNext()) {
             String parameter = it.next();
             String paramType = parameterRepository.getParameter(parameter).getType().toString();
-            modelBuilder.add(IRIS.hasPart, IRIS.createIRI("https://schema.org/"+paramType+"/"+parameter));
+            modelBuilder.add(IRIS.hasPart, IRIS.createCustomIRI("https://schema.org/"+paramType+"/"+parameter));
         }
         
         Model model = modelBuilder.build();

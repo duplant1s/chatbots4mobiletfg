@@ -7,59 +7,58 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 public class IRIS {
     public static final String root = "https://schema.org/";
 
+    private static final SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
     //APPS IRIs
-    public static final String mobileApplication = root+"MobileApplication";
-    public static final String description = root+"description";
-    public static final String summary = root+"abstract";
-    public static final String appCategory = root+"applicationCategory";
-    public static final String datePublished = root+"datePublished";
-    public static final String dateModified = root+"dateModified";
-    public static final String softwareVersion = root+"softwareVersion";
-    public static final String releaseNotes = root+"releaseNotes";
-    public static final String keywords = root+"keywords";
+    public static final IRI mobileApplication = valueFactory.createIRI(root+"MobileApplication");
+    public static final IRI description = valueFactory.createIRI(root+"description");
+    public static final IRI summary = valueFactory.createIRI(root+"abstract");
+    public static final IRI appCategory = valueFactory.createIRI(root+"applicationCategory");
+    public static final IRI datePublished = valueFactory.createIRI(root+"datePublished");
+    public static final IRI dateModified = valueFactory.createIRI(root+"dateModified");
+    public static final IRI softwareVersion = valueFactory.createIRI(root+"softwareVersion");
+    public static final IRI releaseNotes = valueFactory.createIRI(root+"releaseNotes");
+    public static final IRI keywords = valueFactory.createIRI(root+"keywords");
 
     //required for the description node
-    public static final String digitalDocument = root+"DigitalDocument";
-    public static final String textProperty= root+"text";
-    public static final String disambiguatingDescription= root+"disambiguatingDescription";
+    public static final IRI digitalDocument = valueFactory.createIRI(root+"DigitalDocument");
+    public static final IRI textProperty= valueFactory.createIRI(root+"text");
+    public static final IRI disambiguatingDescription= valueFactory.createIRI(root+"disambiguatingDescription");
 
     //USER IRIs
-    public static final String person = root+"Person";
-    public static final String email = root+"email";
-    public static final String givenName = root+"givenName";
-    public static final String familyName = root+"familyName";
-    public static final String application = root+"application";
+    public static final IRI person = valueFactory.createIRI(root+"Person");
+    public static final IRI email = valueFactory.createIRI(root+"email");
+    public static final IRI givenName = valueFactory.createIRI(root+"givenName");
+    public static final IRI familyName = valueFactory.createIRI(root+"familyName");
+    public static final IRI application = valueFactory.createIRI(root+"application");
 
     //FEATURES IRIs
-    public static final String feature = root+"DefinedTerm";
-    public static final String hasPart = root+"hasPart";
+    public static final IRI feature = valueFactory.createIRI(root+"DefinedTerm");
+    public static final IRI hasPart = valueFactory.createIRI(root+"hasPart");
 
     //PARAMETERS IRIs
-    public static final String bool = root+"Boolean";
-    public static final String number = root+"Number";
-    public static final String text = root+"Text";
-    public static final String geoCoordinates = root+"GeoCoordinates";
-    public static final String contactPoint = root+"ContactPoint";
+    public static final IRI bool = valueFactory.createIRI(root+"Boolean");
+    public static final IRI number = valueFactory.createIRI(root+"Number");
+    public static final IRI text = valueFactory.createIRI(root+"Text");
+    public static final IRI geoCoordinates = valueFactory.createIRI(root+"GeoCoordinates");
+    public static final IRI contactPoint = valueFactory.createIRI(root+"ContactPoint");
 
     //FEATURE INTEGRATION IRIs
-    public static final String featureIntegration = root+"Action";
+    public static final IRI featureIntegration = valueFactory.createIRI(root+"Action");
 
     //PARAMETER INTEGRATION IRIs
-    public static final String parameterIntegration = root+"PropertyValue";
+    public static final IRI parameterIntegration = valueFactory.createIRI(root+"PropertyValue");
 
     //APP INTEGRATION IRIs
-    public static final String appIntegration = root+"AppIntegration";
+    public static final IRI appIntegration = valueFactory.createIRI(root+"AppIntegration");
 
     //General properties IRIs
-    public static final String identifier = root+"identifier";
-    public static final String name = root+"name";
-    public static final String value = root+"value";
-    public static final String source = root+"source";
-    public static final String target = root+"target";
+    public static final IRI identifier = valueFactory.createIRI(root+"identifier");
+    public static final IRI name = valueFactory.createIRI(root+"name");
+    public static final IRI value = valueFactory.createIRI(root+"value");
+    public static final IRI source = valueFactory.createIRI(root+"source");
+    public static final IRI target = valueFactory.createIRI(root+"target");
 
-    private static final SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-
-    public static IRI createIRI(String iriString) {
+    public static IRI createCustomIRI(String iriString) {
         return valueFactory.createIRI(iriString);
     }
 

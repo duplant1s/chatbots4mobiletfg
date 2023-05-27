@@ -166,8 +166,8 @@ public class AppRepository {
                 .add(IRIS.identifier, IRIS.createLiteral(app.getIdentifier()))
                 .add(IRIS.name, IRIS.createLiteral(app.getName()))
                 //we connect the app to its description and it summary
-                .add(IRIS.description, IRIS.createIRI(IRIS.digitalDocument+"/"+app.getIdentifier()+"-DESCRIPTION"))
-                .add(IRIS.summary, IRIS.createIRI(IRIS.digitalDocument+"/"+app.getIdentifier()+"-SUMMARY"))
+                .add(IRIS.description, IRIS.createCustomIRI(IRIS.digitalDocument+"/"+app.getIdentifier()+"-DESCRIPTION"))
+                .add(IRIS.summary, IRIS.createCustomIRI(IRIS.digitalDocument+"/"+app.getIdentifier()+"-SUMMARY"))
                 .add(IRIS.releaseNotes, IRIS.createLiteral(app.getReleaseNotes()))
                 .add(IRIS.appCategory, IRIS.createLiteral(app.getApplicationCategory().toString()))
                 .add(IRIS.datePublished, IRIS.createLiteral(app.getDatePublished()))
@@ -177,7 +177,7 @@ public class AppRepository {
         Iterator<String> features = app.getFeatures().iterator();
         while (features.hasNext()) {
             String nextFeature = features.next();
-            modelBuilderApp.add(IRIS.keywords, IRIS.createIRI(IRIS.feature+"/"+nextFeature));
+            modelBuilderApp.add(IRIS.keywords, IRIS.createCustomIRI(IRIS.feature+"/"+nextFeature));
         }
         Model model = modelBuilderApp.build();
 
@@ -226,8 +226,8 @@ public class AppRepository {
         model.subject("schema:AppIntegration/"+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp())
             .add(RDF.TYPE, IRIS.appIntegration)
             .add(IRIS.identifier, appIntegration.getId())
-            .add(IRIS.source, IRIS.createIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
-            .add(IRIS.target, IRIS.createIRI(IRIS.mobileApplication+"/"+appIntegration.getTargetApp()));
+            .add(IRIS.source, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
+            .add(IRIS.target, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getTargetApp()));
         
         Model finalModel = model.build();
 

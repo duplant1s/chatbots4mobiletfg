@@ -1,6 +1,7 @@
 package upc.edu.gessi.tfg.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class User implements Serializable {
@@ -13,15 +14,15 @@ public class User implements Serializable {
     private List<String> preferredParameterIntegrations;
     private List<String> preferredApps;
 
-    public User(String identifier, String email, String givenName, String familyName, List<String> apps, List<String> preferredFeatureIntegrations, List<String> preferredParameterIntegrations, List<String> preferredApps) {
+    public User(String identifier, String email, String givenName, String familyName) {
         this.identifier = identifier;
         this.email = email;
         this.givenName = givenName;
         this.familyName = familyName;
-        this.apps = apps;
-        this.preferredFeatureIntegrations = preferredFeatureIntegrations;
-        this.preferredParameterIntegrations = preferredParameterIntegrations;
-        this.preferredApps = preferredApps;
+        this.apps = new ArrayList<>();
+        this.preferredFeatureIntegrations = new ArrayList<>();
+        this.preferredParameterIntegrations = new ArrayList<>();
+        this.preferredApps = new ArrayList<>();
     }
     
     public String getIdentifier() {

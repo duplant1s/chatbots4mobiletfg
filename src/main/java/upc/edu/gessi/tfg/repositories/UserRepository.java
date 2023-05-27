@@ -36,15 +36,16 @@ public class UserRepository  {
 
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = 
-            "PREFIX schema: <https://schema.org/> "+
+            "PREFIX schema: <https://schema.org/>"+
             "SELECT ?id ?email ?givenName ?familyName ?app ?prefFeature ?prefParam ?prefApp " +
-			"WHERE { ?user a schema:Person . "+
-            "?user schema:identifier ?id . ?user schema:email ?email . ?user schema:givenName ?givenName . "+
+			"WHERE { ?user a schema:Person ."+
+            "?user schema:identifier ?id . ?user schema:email ?email . ?user schema:givenName ?givenName ."+
             "?user schema:familyName ?familyName . "+
-    		"OPTIONAL { ?user schema:application ?app .} "+
-    		"OPTIONAL {?user schema:Action ?prefFeature .} "+
-    		"OPTIONAL {?user schema:PropertyValue ?prefParam .} "+
-        	"OPTIONAL {?user schema:preferredapp ?prefApp }}";
+    		"OPTIONAL { ?user schema:application ?app .}"+
+    		"OPTIONAL {?user schema:Action ?prefFeature .}"+
+    		"OPTIONAL {?user schema:PropertyValue ?prefParam .}"+
+        	"OPTIONAL {?user schema:AppIntegration ?prefApp }"+
+            "}";
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
             Map<String, User> userMap = new HashMap<String, User>();
@@ -66,11 +67,24 @@ public class UserRepository  {
                 User user;
                 if (userMap.containsKey(id)) {
                     user = userMap.get(id);
-                    user.getApps().add(app);
-                    user.getPreferredFeatureIntegrations().add(prefFeature);
-                    user.getPreferredParameterIntegrations().add(prefParam);
+                    if (app != null && !user.getApps().contains(app)) 
+                        user.addApp(app);
+                    
+                    if(!user.getPreferredFeatureIntegrations().contains(prefFeature))
+                        user.addPreferredFeatureIntegration(prefFeature);
+
+                    if(!user.getPreferredParameterIntegrations().contains(prefParam))
+                        user.addPreferredParameterIntegration(prefParam);
+
+                    if(!user.getPreferredApps().contains(prefApp))
+                        user.addPreferredApp(prefApp);
+                            
                 } else {
-                    user = new User(id, email, givenName, familyName, new ArrayList<String>(Arrays.asList(app)), new ArrayList<String>(Arrays.asList(prefFeature)), new ArrayList<String>(Arrays.asList(prefParam)), new ArrayList<String>(Arrays.asList(prefApp)));
+                    user = new User(id, email, givenName, familyName);
+                    user.addApp(app);
+                    user.addPreferredFeatureIntegration(prefFeature);
+                    user.addPreferredParameterIntegration(prefParam);
+                    user.addPreferredApp(prefApp);
                     userMap.put(id, user);
                 }
             }
@@ -97,16 +111,18 @@ public class UserRepository  {
             "}", id);
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
-            
+
             List<String> apps = new ArrayList<String>();
-            List<String> prefFeature = new ArrayList<String>();
-            List<String> prefParam = new ArrayList<String>();
+            List<String> prefFeatureIntegrations = new ArrayList<String>();
+            List<String> prefParamIntIntegrations = new ArrayList<String>();
             List<String> prefApps = new ArrayList<String>();
-            if (result.hasNext()) {
+            
+            while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String email = bindingSet.getValue("email").stringValue();
                 String givenName = bindingSet.getValue("givenName").stringValue();
                 String familyName = bindingSet.getValue("familyName").stringValue();
+                user = new User(id, email, givenName, familyName);
                 Value appValue = bindingSet.getValue("app");
                 if (appValue != null) {
                     String app = appValue.stringValue();
@@ -115,21 +131,24 @@ public class UserRepository  {
                 Value prefFeatureInt = bindingSet.getValue("prefFeature");
                 if (prefFeatureInt != null) {
                     String featureInt = prefFeatureInt.stringValue();
-                    prefFeature.add(featureInt);
+                    prefFeatureIntegrations.add(featureInt);
                 }
                 Value prefParamInt = bindingSet.getValue("prefParam");
                 if (prefParamInt != null) {
                     String paramInt = prefParamInt.stringValue();
-                    prefParam.add(paramInt);
+                    prefParamIntIntegrations.add(paramInt);
                 }
                 Value prefApplication = bindingSet.getValue("prefApp");
                 if (prefApplication != null) {
                     String prefApp = prefApplication.stringValue();
                     prefApps.add(prefApp);
                 }
-
-                user = new User(id, email, givenName, familyName, apps, prefFeature, prefParam, prefApps);
             }
+            user.setApps(apps);
+            user.setPreferredFeatureIntegrations(prefFeatureIntegrations);
+            user.setPreferredParameterIntegrations(prefParamIntIntegrations);
+            user.setPreferredApps(prefApps);
+
         } finally {
             repository.shutDown();
         }
@@ -150,25 +169,25 @@ public class UserRepository  {
         Iterator<String> apps = user.getApps().iterator();
         while (apps.hasNext()) {
             String app = apps.next();
-            modelBuilder.add(IRIS.application, IRIS.createIRI(IRIS.mobileApplication+"/" + app));
+            modelBuilder.add(IRIS.application, IRIS.createCustomIRI(IRIS.mobileApplication+"/" + app));
         }
 
         Iterator<String> featuresInt = user.getPreferredFeatureIntegrations().iterator();
         while (featuresInt.hasNext()) {
             String feature = featuresInt.next();
-            modelBuilder.add(IRIS.featureIntegration, IRIS.createIRI(IRIS.featureIntegration + "/" + feature));
+            modelBuilder.add(IRIS.featureIntegration, IRIS.createCustomIRI(IRIS.featureIntegration + "/" + feature));
         }
 
         Iterator<String> parametersInt = user.getPreferredParameterIntegrations().iterator();
         while (parametersInt.hasNext()) {
             String parameter = parametersInt.next();
-            modelBuilder.add(IRIS.parameterIntegration, IRIS.createIRI(IRIS.parameterIntegration + "/" + parameter));
+            modelBuilder.add(IRIS.parameterIntegration, IRIS.createCustomIRI(IRIS.parameterIntegration + "/" + parameter));
         }
 
         Iterator<String> prefApps = user.getPreferredApps().iterator();
         while (prefApps.hasNext()) {
             String prefApp = prefApps.next();
-            modelBuilder.add(IRIS.appIntegration, IRIS.createIRI(IRIS.mobileApplication +"/" + prefApp));
+            modelBuilder.add(IRIS.appIntegration, IRIS.createCustomIRI(IRIS.mobileApplication +"/" + prefApp));
         }
 
         Model model = modelBuilder.build();
@@ -183,26 +202,71 @@ public class UserRepository  {
 
     public void updateUser(String id, User updatedUser) {
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" 
-            +"DELETE {"+
-                "?user schema:email ?oldEmail ;"+
-                      "schema:familyName ?oldFamilyName ."+
-                      "schema:givenName ?oldGivenName . "+
-              "}"+
-              "INSERT {"+
-                "?user schema:email %s ;"+
-                      "schema:givenName %s ;"+
-                      "schema:familyName %s ."+
-              "}"+
-              "WHERE {"+
-                "?user a schema:Person ;"+
-                      "schema:identifier '%s' ."+
-                "}"+
-              "}", updatedUser.getEmail() != null ?updatedUser.getEmail() : "?oldEmail", 
-              updatedUser.getFamilyName() != null ?updatedUser.getFamilyName() : "?oldFamilyName",
-              updatedUser.getGivenName() != null ?updatedUser.getGivenName() : "?oldGivenName");
 
-            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+            StringBuilder queryString = new StringBuilder();
+            queryString.append("PREFIX schema: <https://schema.org/>\n");
+            queryString.append("DELETE {\n");
+            queryString.append("?user schema:email ?oldEmail ; \n");
+            queryString.append("schema:familyName ?oldFamilyName ;\n");
+            queryString.append("schema:givenName ?oldGivenName ; \n");
+            queryString.append("schema:application ?oldApps ;\n");
+            queryString.append("schema:Action ?oldPrefFeatures ;\n");
+            queryString.append("schema:PropertyValue ?oldPrefParams ;\n");
+            queryString.append("schema:AppIntegration ?oldPrefApps .\n");
+            queryString.append("}\n");
+            queryString.append("INSERT {\n");
+            queryString.append("?user schema:email '");
+            queryString.append(updatedUser.getEmail());
+            queryString.append("' ;\n");
+            queryString.append("schema:givenName '");
+            queryString.append(updatedUser.getGivenName());
+            queryString.append("' ;\n");
+            queryString.append("schema:familyName '");
+            queryString.append(updatedUser.getFamilyName());
+            queryString.append("' ;\n");
+            Iterator<String> apps = updatedUser.getApps().iterator();
+            while (apps.hasNext()) {
+                String app = apps.next();
+                queryString.append("schema:application <" + IRIS.mobileApplication + "/" + app + "> ;\n");
+            }
+
+            Iterator<String> featuresInt = updatedUser.getPreferredFeatureIntegrations().iterator();
+            while (featuresInt.hasNext()) {
+                String feature = featuresInt.next();
+                queryString.append("schema:Action <" + IRIS.featureIntegration + "/" + feature + "> ;\n");
+            }
+
+            Iterator<String> parametersInt = updatedUser.getPreferredParameterIntegrations().iterator();
+            while (parametersInt.hasNext()) {
+                String parameter = parametersInt.next();
+                queryString.append("schema:PropertyValue <" + IRIS.parameterIntegration + "/" + parameter + "> ;\n");
+            }
+
+            Iterator<String> prefApps = updatedUser.getPreferredApps().iterator();
+            while (prefApps.hasNext()) {
+                String prefApp = prefApps.next();
+                queryString.append("schema:AppIntegration <" + IRIS.appIntegration + "/" + prefApp + "> ;\n");
+            }
+
+            queryString.append("}\n");
+            queryString.append("WHERE { \n");
+            queryString.append("?user a schema:Person .\n");
+            queryString.append("?user schema:identifier '");
+            queryString.append(id);
+            queryString.append("' .\n");
+            queryString.append("?user schema:email ?oldEmail .\n");
+            queryString.append("?user schema:familyName ?oldFamilyName .\n");
+            queryString.append("?user schema:givenName ?oldGivenName . \n");
+            queryString.append("OPTIONAL {?user schema:application ?oldApps }\n");
+            queryString.append("OPTIONAL {?user schema:Action ?oldPrefFeatures }\n");
+            queryString.append("OPTIONAL {?user schema:PropertyValue ?oldPrefParams }\n");
+            queryString.append("OPTIONAL {?user schema:AppIntegration ?oldPrefApps }\n");
+            queryString.append("}");
+
+            String test = queryString.toString();
+
+            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());
+
             update.execute();
         }
         catch (Exception e) {

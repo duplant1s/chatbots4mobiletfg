@@ -106,8 +106,8 @@ public class FeatureIntegrationRepository{
             .add(RDF.TYPE, IRIS.featureIntegration)
             .add(IRIS.identifier, featureIntegration.getId())
             .add(IRIS.name, featureIntegration.getName())
-            .add(IRIS.source, IRIS.createIRI(IRIS.feature+"/"+featureIntegration.getSourceFeature()))
-            .add(IRIS.target, IRIS.createIRI(IRIS.feature+"/"+featureIntegration.getTargetFeature()));
+            .add(IRIS.source, IRIS.createCustomIRI(IRIS.feature+"/"+featureIntegration.getSourceFeature()))
+            .add(IRIS.target, IRIS.createCustomIRI(IRIS.feature+"/"+featureIntegration.getTargetFeature()));
         
         Model model = modelBuilder.build();
 
@@ -157,7 +157,7 @@ public class FeatureIntegrationRepository{
 
     public void deleteFeatureIntegration(String id) {
         try(RepositoryConnection connection = repository.getConnection()) {
-            connection.remove(IRIS.createIRI("https://schema.org/Action/"+id), null, null);
+            connection.remove(IRIS.createCustomIRI("https://schema.org/Action/"+id), null, null);
         } catch(Exception e) {
             System.out.println(e.getMessage());
         } finally {

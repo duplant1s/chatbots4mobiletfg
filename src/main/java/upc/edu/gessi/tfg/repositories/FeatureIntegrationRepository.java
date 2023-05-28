@@ -120,17 +120,17 @@ public class FeatureIntegrationRepository{
         }
     }
 
-
-    //TODOOOOOOOOOOOO
     public void updateFeatureIntegration(String id, FeatureIntegration updatedFeatureIntegration) {
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+
+                "?featureIntegration schema:identifier '%s' ."+
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
             "}\n"+
             "INSERT { \n"+
+                "?featureIntegration schema:identifier '%s' ."+
                 "?featureIntegration schema:name '%s' ."+
                 "?featureIntegration schema:source '%s' ."+
                 "?featureIntegration schema:target '%s'"+
@@ -141,7 +141,7 @@ public class FeatureIntegrationRepository{
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
-            "}", updatedFeatureIntegration.getId(), updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
+            "}", id, updatedFeatureIntegration.getId(),  updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
@@ -290,9 +290,9 @@ public class FeatureIntegrationRepository{
         }
 
         ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.setNamespace("schema", "https://schema.org/");
+        modelBuilder.setNamespace("schema", IRIS.root);
         modelBuilder.subject("schema:Person/"+user)
-            .add("schema:Action", "https://schema.org/Action"+featureIntegration.getId());
+            .add(IRIS.featureIntegration, IRIS.createCustomIRI(IRIS.featureIntegration+"/"+featureIntegration.getId()));
 
         Model model = modelBuilder.build();
 
@@ -305,7 +305,7 @@ public class FeatureIntegrationRepository{
         }
     }
 
-    public void removePreferredAppIntegration(String user, FeatureIntegration featureIntegration){
+    public void removePreferredFeatureIntegration(String user, FeatureIntegration featureIntegration){
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+

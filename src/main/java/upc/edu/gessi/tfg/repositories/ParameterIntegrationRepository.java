@@ -19,6 +19,8 @@ import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+
+import upc.edu.gessi.tfg.models.Feature;
 import upc.edu.gessi.tfg.models.ParameterIntegration;
 import upc.edu.gessi.tfg.utils.IRIS;
 
@@ -27,6 +29,7 @@ public class ParameterIntegrationRepository {
     private String repoURL = "http://localhost:7200/repositories/Chatbots4MobileTFG";
     private Repository repository;
     private ParameterRepository parameterRepository = new ParameterRepository();
+    private FeatureRepository featureRepository = new FeatureRepository();
     
     public ParameterIntegrationRepository() {
         this.repository = new HTTPRepository(repoURL);
@@ -216,7 +219,8 @@ public class ParameterIntegrationRepository {
     // input: source app, source feature, selected target app, selected target feature
     // expected output: List of custom target parameters (optional field)
     public List<String> requestCustomParameters(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
-        List<String> customParameters = new ArrayList<>();
+        List<String> paramsWithIntegration = new ArrayList<>();
+        List<String> paramsWithoutIntegration = new ArrayList<>();
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "SELECT ?targetParamId\n" +
@@ -235,11 +239,11 @@ public class ParameterIntegrationRepository {
                 "         schema:name '%s'."+
                 "?targetFeature schema:hasPart ?targetParam."+
                 "?targetParam schema:identifier ?targetParamId."+
-                "FILTER NOT EXISTS {"+
-                "   ?parameterIntegration a schema:PropertyValue;"+
-                "                        schema:name ?sourceParamId;"+
-                "                        schema:value ?targetParamId."+
-                "}"+
+                "?paramInt a schema:PropertyValue;"+
+                "        schema:name ?sourceInt;"+
+                "        schema:value ?targetInt."+
+                "?sourceInt schema:identifier ?sourceParamId."+
+                "?targetInt schema:identifier ?targetParamId"+
             "}", sourceApp, sourceFeature, targetApp, targetFeature);
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
@@ -248,14 +252,19 @@ public class ParameterIntegrationRepository {
             while(result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String targetParamId = bindingSet.getValue("targetParamId").stringValue();
-                customParameters.add(targetParamId);
+                if (!paramsWithIntegration.contains(targetParamId))
+                    paramsWithIntegration.add(targetParamId);
             }
+
+            paramsWithoutIntegration = featureRepository.getFeature(targetFeature).getParameters();
+            paramsWithoutIntegration.removeAll(paramsWithIntegration);
+            
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
             repository.shutDown();
         }
-        return customParameters;
+        return paramsWithoutIntegration;
     }
 
     //USER PREFERENCES
@@ -265,9 +274,9 @@ public class ParameterIntegrationRepository {
         }
 
         ModelBuilder builder = new ModelBuilder();
-        builder.setNamespace("schema", "https://schema.org/");
+        builder.setNamespace("schema", IRIS.root);
         builder.subject("schema:Person/"+user)
-                .add("https://schema.org/PropertyValue", IRIS.createCustomIRI("https://schema.org/PropertyValue/"+parameterIntegration.getId()));
+                .add(IRIS.parameterIntegration, IRIS.createCustomIRI(IRIS.parameterIntegration+"/"+parameterIntegration.getId()));
         
         Model model = builder.build();
         try (RepositoryConnection connection = repository.getConnection()) {

@@ -43,6 +43,7 @@ public class FeatureRepository {
             String queryString = "PREFIX schema: <https://schema.org/>\n" +
             "SELECT ?id ?name ?parameter WHERE {\n" +
                 "?feature a schema:DefinedTerm ;" +   
+                " schema:identifier ?id ;" +
                 " schema:name ?name ; " +
                 " schema:hasPart ?parameter . " +
             "}";
@@ -52,6 +53,7 @@ public class FeatureRepository {
             Map<String, Feature> featureMap = new HashMap<>();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
+                String id = bindingSet.getValue("id").stringValue();
                 String name = bindingSet.getValue("name").stringValue();
                 String parameter = bindingSet.getValue("parameter").stringValue();
                 Feature feature;
@@ -59,11 +61,13 @@ public class FeatureRepository {
                     feature = featureMap.get(name);
                     feature.getParameters().add(parameter);
                 } else {
-                    feature = new Feature(name, name, new ArrayList<String>(Arrays.asList(parameter)));
+                    feature = new Feature(id, name, new ArrayList<String>(Arrays.asList(parameter)));
                     featureMap.put(name, feature);
                 }
             }
-    features.addAll(featureMap.values());
+
+            features.addAll(featureMap.values());
+            
         } finally {
             repository.shutDown();
         }
@@ -74,12 +78,12 @@ public class FeatureRepository {
     public Feature getFeature(String id) {
         Feature feature = null;
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            String queryString = "PREFIX schema: <https://schema.org/>\n" +
             "SELECT ?name ?parameter WHERE { \n"+
-                "<https://schema.org/DefinedTerm/%s> a schema:DefinedTerm ;"+ 
-                //"       schema:identifier %s' ;"+ 
+                "?feature a schema:DefinedTerm ;"+ 
+                "       schema:identifier '"+id+"' ;"+ 
                 "       schema:name ?name ;" + 
-                "       schema:hasPart ?parameter }", id);
+                "       schema:hasPart ?parameter }";
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
@@ -89,7 +93,8 @@ public class FeatureRepository {
                 BindingSet bindingSet = result.next();
                 String name = bindingSet.getValue("name").stringValue();
                 String parameter = bindingSet.getValue("parameter").stringValue();
-                parameters.add(parameter);
+                if (!parameters.contains(parameter))
+                    parameters.add(parameter);
                 feature = new Feature(id, name, parameters);
             }
         } finally {
@@ -135,11 +140,13 @@ public class FeatureRepository {
             queryString.append("} \n");
             queryString.append("INSERT { \n");
             queryString.append("?feature schema:name '"+updatedFeature.getName()+"' ; \n");
-            Iterator<String> it = updatedFeature.getParameters().iterator();
-            while (it.hasNext()) {
-                String parameter = it.next();
-                String paramType = parameterRepository.getParameter(parameter).getType().toString();
-                queryString.append("         schema:hasPart <https://schema.org/"+paramType+"/"+parameter+"> ; \n");
+            if (updatedFeature.getParameters() != null) {
+                Iterator<String> it = updatedFeature.getParameters().iterator();
+                while (it.hasNext()) {
+                    String parameter = it.next();
+                    String paramType = parameterRepository.getParameter(parameter).getType().toString();
+                    queryString.append("         schema:hasPart <https://schema.org/"+paramType+"/"+parameter+"> ; \n");
+                }
             }
             queryString.append("} \n");
             queryString.append("WHERE { \n");

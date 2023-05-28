@@ -211,7 +211,7 @@ public class AppRepository {
             queryString.append("INSERT { \n");
             queryString.append("?app a schema:MobileApplication ; \n");
             queryString.append("schema:name '"+updatedApp.getName()+"' ; \n");
-            queryString.append("schema:description '"+updatedApp.getDescription()+"' ; \n");
+            queryString.append("schema:description <" + IRIS.digitalDocument+"/"+updatedApp.getIdentifier()+"-DESCRIPTION> ;\n");
             queryString.append("schema:abstract '"+updatedApp.getSummary()+"' ; \n");
             queryString.append("schema:releaseNotes '"+updatedApp.getReleaseNotes()+"' ; \n");
             queryString.append("schema:applicationCategory '"+updatedApp.getApplicationCategory().toString()+"' ; \n");
@@ -251,41 +251,6 @@ public class AppRepository {
     public void deleteApp(String id) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" + "DELETE WHERE { ?user a schema:MobileApplication ; schema:identifier '%s' ; ?p ?o }", id);
-            Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
-            update.execute();
-        }
-        catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            repository.shutDown();
-        }
-    }
-
-    public void addPreferredAppIntegration(AppIntegration appIntegration) {
-
-        ModelBuilder model = new ModelBuilder();
-        model.setNamespace("schema", "https://schema.org");
-        model.subject("schema:AppIntegration/"+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp())
-            .add(RDF.TYPE, IRIS.appIntegration)
-            .add(IRIS.identifier, appIntegration.getId())
-            .add(IRIS.source, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
-            .add(IRIS.target, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getTargetApp()));
-        
-        Model finalModel = model.build();
-
-        try(RepositoryConnection connection = repository.getConnection()) {
-            connection.add(finalModel);
-        } catch(Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            repository.shutDown();
-        }
-    }
-
-    public void removeAppIntegration(AppIntegration appIntegration) {
-        try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" + "DELETE WHERE { ?user a schema:AppIntegration ; schema:identifier '%s' ; ?p ?o }",
-            appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }

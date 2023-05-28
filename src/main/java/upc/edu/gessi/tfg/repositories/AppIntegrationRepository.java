@@ -85,10 +85,9 @@ public class AppIntegrationRepository {
     }
     
     public void createAppIntegration(AppIntegration appIntegration) {
-
         ModelBuilder model = new ModelBuilder();
-        model.setNamespace("schema", "https://schema.org");
-        model.subject("schema:AppIntegration/"+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp())
+        model.setNamespace("schema", IRIS.root);
+        model.subject("schema:AppIntegration/" + appIntegration.getId())
             .add(RDF.TYPE, IRIS.appIntegration)
             .add(IRIS.identifier, appIntegration.getId())
             .add(IRIS.source, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
@@ -116,8 +115,8 @@ public class AppIntegrationRepository {
             queryString.append("}\n");
             queryString.append("INSERT { \n");
             queryString.append("?appIntegration a schema:AppIntegration ;\n");
-            queryString.append("schema:source <"+appIntegration.getSourceApp()+"> ;\n");
-            queryString.append("schema:target <"+appIntegration.getTargetApp()+"> .\n");
+            queryString.append("schema:source <"+ IRIS.mobileApplication + appIntegration.getSourceApp()+"> ;\n");
+            queryString.append("schema:target <"+ IRIS.mobileApplication + appIntegration.getTargetApp()+"> .\n");
             queryString.append("}\n");
             queryString.append("WHERE { \n");
             queryString.append("?appIntegration a schema:AppIntegration ;\n");
@@ -131,10 +130,10 @@ public class AppIntegrationRepository {
         }
     }
 
-    public void removeAppIntegration(AppIntegration appIntegration) {
+    public void removeAppIntegration(String id) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" + "DELETE WHERE { ?user a schema:AppIntegration ; schema:identifier '%s' ; ?p ?o }",
-            appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+            id);
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }
@@ -200,6 +199,7 @@ public class AppIntegrationRepository {
             //HIGHEST PRIORITY: USER PREFERRED-APPS THAT HAVE THE FEATURE
             queryString = String.format("PREFIX schema: <https://schema.org/>\n"+
             "SELECT ?appName WHERE {"+
+                "{ "+
                 "?user a schema:Person ."+
                 "?user schema:identifier '%s' ."+
                 "?user schema:AppIntegration ?appIntegration ."+
@@ -208,9 +208,11 @@ public class AppIntegrationRepository {
                 "?app a schema:MobileApplication ."+
                 "?app schema:name ?appName ."+
                 "?app schema:keywords ?feature ."+
-                "    ?feature a schema:DefinedTerm;"+
-                "       schema:name '%s'"+
-                "} UNION {"+
+                "?feature a schema:DefinedTerm;"+
+                "schema:name '%s'"+
+                "} "+
+                "UNION "+
+                "{ "+
                 "?user a schema:Person ."+
                 "?user schema:identifier '%s' ."+
                 "?user schema:AppIntegration ?appIntegration ."+
@@ -219,10 +221,11 @@ public class AppIntegrationRepository {
                 "?app a schema:MobileApplication ."+
                 "?app schema:name ?appName ."+
                 "?app schema:keywords ?feature ."+
-                "    ?feature a schema:DefinedTerm;"+
-                "       schema:name '%s'"+
+                "?feature a schema:DefinedTerm;"+
+                "schema:name '%s'"+
                 "}"+
-            "}", user, feature, feature);
+            "}", user, feature, user, feature);
+
 
             tupleQuery = connection.prepareTupleQuery(queryString);
             result = tupleQuery.evaluate();
@@ -260,7 +263,7 @@ public class AppIntegrationRepository {
         ModelBuilder model = new ModelBuilder();
         model.setNamespace("schema", IRIS.root);
         model.subject("schema:Person/"+user)
-            .add(IRIS.appIntegration, IRIS.createCustomIRI(IRIS.appIntegration+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp()));
+            .add(IRIS.appIntegration, IRIS.createCustomIRI(IRIS.appIntegration+"/"+appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp()));
         
         Model finalModel = model.build();
         

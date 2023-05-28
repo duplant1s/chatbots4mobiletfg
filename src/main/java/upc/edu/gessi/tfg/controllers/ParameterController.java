@@ -87,9 +87,21 @@ public class ParameterController {
         return ResponseEntity.noContent().build();
     }
 
+    //USER STORY 3
     @GetMapping("/integrations/request")
     public ResponseEntity<List<List<Object>>> getParameterIntegrationsRequest(@RequestBody RequestParameterIntegration request ) {
         List<List<Object>> paramIntegrations = parameterService.getParameterIntegrations(request.getSourceApp(), request.getSourceFeature(), request.getTargetApp(), request.getTargetFeature());
+
+        if (paramIntegrations == null)
+            return ResponseEntity.notFound().build();
+        
+        return ResponseEntity.ok(paramIntegrations);
+    }
+
+    //USER STORY 4
+    @GetMapping("/integrations/request/custom")
+    public ResponseEntity<List<String>> getCustomParameters(@RequestBody RequestParameterIntegration request ) {
+        List<String> paramIntegrations = parameterService.getCustomParameters(request.getSourceApp(), request.getSourceFeature(), request.getTargetApp(), request.getTargetFeature());
 
         if (paramIntegrations == null)
             return ResponseEntity.notFound().build();

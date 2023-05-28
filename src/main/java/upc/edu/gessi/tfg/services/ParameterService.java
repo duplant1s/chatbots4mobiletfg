@@ -78,4 +78,9 @@ public class ParameterService {
     public List<List<Object>> getParameterIntegrations(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
         return parameterIntegrationRepository.requestParameterIntegration(sourceApp, sourceFeature, targetApp, targetFeature);
     }
+
+    //US4
+    public List<String> getCustomParameters(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
+        return parameterIntegrationRepository.requestCustomParameters(sourceApp, sourceFeature, targetApp, targetFeature);
+    }
 }

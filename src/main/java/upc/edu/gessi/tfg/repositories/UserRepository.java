@@ -131,17 +131,20 @@ public class UserRepository  {
                 Value prefFeatureInt = bindingSet.getValue("prefFeature");
                 if (prefFeatureInt != null) {
                     String featureInt = prefFeatureInt.stringValue();
-                    prefFeatureIntegrations.add(featureInt);
+                    if (!prefFeatureIntegrations.contains(featureInt))
+                        prefFeatureIntegrations.add(featureInt);
                 }
                 Value prefParamInt = bindingSet.getValue("prefParam");
                 if (prefParamInt != null) {
                     String paramInt = prefParamInt.stringValue();
-                    prefParamIntIntegrations.add(paramInt);
+                    if (!prefParamIntIntegrations.contains(paramInt))
+                        prefParamIntIntegrations.add(paramInt);
                 }
                 Value prefApplication = bindingSet.getValue("prefApp");
                 if (prefApplication != null) {
                     String prefApp = prefApplication.stringValue();
-                    prefApps.add(prefApp);
+                    if (!prefApps.contains(prefApp))
+                        prefApps.add(prefApp);
                 }
             }
             user.setApps(apps);

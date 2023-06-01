@@ -155,7 +155,7 @@ public class UserAppController {
     }
 
     //USER STORY #1
-    @GetMapping("/users/{id}/integrations/features/source/{sourceFeature}")
+    @GetMapping("/users/{id}/integrations/features/{sourceFeature}")
     public ResponseEntity<List<String>> requestFeatureIntegration(@PathVariable String id, @PathVariable String sourceFeature) {
         List<String> features = userAppService.requestFeatureIntegration(id, sourceFeature);
         if (features == null)
@@ -163,9 +163,9 @@ public class UserAppController {
         return ResponseEntity.ok(features);
     }
     //USER STORY #2
-    @GetMapping("/users/{id}/integrations/apps/feature/{featureId}")
-    public ResponseEntity<List<String>> getAppsFromFeature(@PathVariable String id, @PathVariable String featureId) {
-        List<String> apps = userAppService.getAppsFromFeature(id, featureId);
+    @GetMapping("/users/{id}/integrations/apps/feature/{sourceFeature}/{targetFeature}")
+    public ResponseEntity<List<String>> getAppsFromFeature(@PathVariable String id, @PathVariable String sourceFeature, @PathVariable String targetFeature) {
+        List<String> apps = userAppService.getAppsFromFeature(id, sourceFeature, targetFeature);
         if (apps == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(apps);

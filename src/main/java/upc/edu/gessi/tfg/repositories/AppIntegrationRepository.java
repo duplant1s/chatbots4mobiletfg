@@ -150,7 +150,7 @@ public class AppIntegrationRepository {
     //     input: selected target feature (story #1)
     //     expected output: app list ordered by user preferences of potential integrations from selected target feature with expected parameters and integration from source app
 
-    public List<String> getAppsFromFeature(String user, String feature) {
+    public List<String> getAppsFromFeature(String user, String sourceFeature, String targetFeature) {
         List<String> apps = new ArrayList<String>();
         Map<String, Integer> appsMap = new HashMap<String, Integer>();
         try (RepositoryConnection connection = repository.getConnection()) {
@@ -163,7 +163,7 @@ public class AppIntegrationRepository {
                 "?app schema:keywords ?feature ."+
                 "    ?feature a schema:DefinedTerm;"+
                 "       schema:name '%s'"+
-            "}", feature);
+            "}", targetFeature);
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(queryString);
             TupleQueryResult result = tupleQuery.evaluate();
@@ -185,7 +185,7 @@ public class AppIntegrationRepository {
                 "?app schema:keywords ?feature ."+
                 "    ?feature a schema:DefinedTerm;"+
                 "       schema:name '%s'"+
-            "}", user, feature);
+            "}", user, targetFeature);
 
             tupleQuery = connection.prepareTupleQuery(queryString);
             result = tupleQuery.evaluate();
@@ -224,7 +224,7 @@ public class AppIntegrationRepository {
                 "?feature a schema:DefinedTerm;"+
                 "schema:name '%s'"+
                 "}"+
-            "}", user, feature, user, feature);
+            "}", user, sourceFeature, user, targetFeature);
 
 
             tupleQuery = connection.prepareTupleQuery(queryString);

@@ -4,14 +4,24 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class User implements Serializable {
+    @JsonProperty("identifier")
     private String identifier;
+    @JsonProperty("email")
     private String email;
+    @JsonProperty("givenName")
     private String givenName;
+    @JsonProperty("familyName")
     private String familyName;
+    @JsonProperty("apps")
     private List<String> apps;
+    @JsonProperty("preferredFeatureIntegrations")
     private List<String> preferredFeatureIntegrations;
+    @JsonProperty("preferredParameterIntegrations")
     private List<String> preferredParameterIntegrations;
+    @JsonProperty("preferredApps")
     private List<String> preferredApps;
 
     public User(String identifier, String email, String givenName, String familyName) {

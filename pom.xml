@@ -8,8 +8,8 @@
 		<version>3.0.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>chatbots4mobile_tfg</groupId>
-	<artifactId>chatbots4mobiletfg</artifactId>
+	<groupId>upc.edu.gessi</groupId>
+	<artifactId>tfg</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>chatbots4mobiletfg</name>
 	<description>Demo project for Spring Boot</description>
@@ -17,6 +17,19 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
+			<version>3.0.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-neo4j</artifactId>
+			<version>7.0.5</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,7 +70,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+ 
+   <dependency>
+     <groupId>org.springframework.data</groupId>
+     <artifactId>spring-data-neo4j</artifactId>
+     <version>7.0.5</version>
+   </dependency>
+ </dependencies>
 
 	<build>
 		<plugins>

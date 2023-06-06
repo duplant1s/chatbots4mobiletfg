@@ -55,7 +55,7 @@ public class FeatureIntegrationRepository{
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
                 FeatureIntegration featureIntegration = new FeatureIntegration(source, target);
-                featureIntegration.setId(id);
+                featureIntegration.setIdentifier(id);
                 featureIntegration.setName(name);
                 featureIntegrations.add(featureIntegration);
             }
@@ -89,7 +89,7 @@ public class FeatureIntegrationRepository{
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
                 featureIntegration = new FeatureIntegration(source, target);
-                featureIntegration.setId(id);
+                featureIntegration.setIdentifier(id);
                 featureIntegration.setName(name);
             }
         } finally {
@@ -104,7 +104,7 @@ public class FeatureIntegrationRepository{
         modelBuilder.setNamespace("schema", IRIS.root);
         modelBuilder.subject("schema:Action/"+featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature())
             .add(RDF.TYPE, IRIS.featureIntegration)
-            .add(IRIS.identifier, featureIntegration.getId())
+            .add(IRIS.identifier, featureIntegration.getIdentifier())
             .add(IRIS.name, featureIntegration.getName())
             .add(IRIS.source, IRIS.createCustomIRI(IRIS.feature+"/"+featureIntegration.getSourceFeature()))
             .add(IRIS.target, IRIS.createCustomIRI(IRIS.feature+"/"+featureIntegration.getTargetFeature()));
@@ -141,7 +141,7 @@ public class FeatureIntegrationRepository{
                 "?featureIntegration schema:name ?name ."+
                 "?featureIntegration schema:source ?source ."+
                 "?featureIntegration schema:target ?target"+
-            "}", id, updatedFeatureIntegration.getId(),  updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
+            "}", id, updatedFeatureIntegration.getIdentifier(),  updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
@@ -285,14 +285,14 @@ public class FeatureIntegrationRepository{
 
     //USER PREFERENCES
     public void addPreferredFeatureIntegration(String user, FeatureIntegration featureIntegration) {
-        if (getFeatureIntegration(featureIntegration.getId()) == null) {
+        if (getFeatureIntegration(featureIntegration.getIdentifier()) == null) {
             createFeatureIntegration(featureIntegration);
         }
 
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.setNamespace("schema", IRIS.root);
         modelBuilder.subject("schema:Person/"+user)
-            .add(IRIS.featureIntegration, IRIS.createCustomIRI(IRIS.featureIntegration+"/"+featureIntegration.getId()));
+            .add(IRIS.featureIntegration, IRIS.createCustomIRI(IRIS.featureIntegration+"/"+featureIntegration.getIdentifier()));
 
         Model model = modelBuilder.build();
 
@@ -316,7 +316,7 @@ public class FeatureIntegrationRepository{
                 "?user schema:identifier '%s' ."+ 
                 "?user schema:Action ?featureIntegration ."+
                 "?featureIntegration schema:identifier '%s' ."+
-            "}", user, featureIntegration.getId());
+            "}", user, featureIntegration.getIdentifier());
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }

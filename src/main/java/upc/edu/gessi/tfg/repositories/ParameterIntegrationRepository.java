@@ -98,9 +98,9 @@ public class ParameterIntegrationRepository {
     public void createParameterIntegration(ParameterIntegration parameterIntegration) {
         ModelBuilder builder = new ModelBuilder();
         builder.setNamespace("schema", IRIS.root);
-        builder.subject("schema:PropertyValue/"+parameterIntegration.getId())
+        builder.subject("schema:PropertyValue/"+parameterIntegration.getIdentifier())
                 .add(RDF.TYPE, IRIS.parameterIntegration)
-                .add(IRIS.identifier, IRIS.createLiteral(parameterIntegration.getId()));
+                .add(IRIS.identifier, IRIS.createLiteral(parameterIntegration.getIdentifier()));
                 String parameterType = parameterRepository.getParameter(parameterIntegration.getSourceParameter()).getType().toString();
                 builder.add(IRIS.name, IRIS.createCustomIRI(IRIS.root+parameterType+"/"+parameterIntegration.getSourceParameter()));
                 parameterType = parameterRepository.getParameter(parameterIntegration.getTargetParameter()).getType().toString();
@@ -269,14 +269,14 @@ public class ParameterIntegrationRepository {
 
     //USER PREFERENCES
     public void addPreferredParameterIntegration(String user, ParameterIntegration parameterIntegration) {
-        if (getParameterIntegration(parameterIntegration.getId()) == null) {
+        if (getParameterIntegration(parameterIntegration.getIdentifier()) == null) {
             createParameterIntegration(parameterIntegration);
         }
 
         ModelBuilder builder = new ModelBuilder();
         builder.setNamespace("schema", IRIS.root);
         builder.subject("schema:Person/"+user)
-                .add(IRIS.parameterIntegration, IRIS.createCustomIRI(IRIS.parameterIntegration+"/"+parameterIntegration.getId()));
+                .add(IRIS.parameterIntegration, IRIS.createCustomIRI(IRIS.parameterIntegration+"/"+parameterIntegration.getIdentifier()));
         
         Model model = builder.build();
         try (RepositoryConnection connection = repository.getConnection()) {
@@ -299,7 +299,7 @@ public class ParameterIntegrationRepository {
                 "?user schema:identifier '%s' ."+ 
                 "?user schema:PropertyValue ?parameterIntegration ."+
                 "?parameterIntegration schema:identifier '%s' ."+
-            "}", user, parameterIntegration.getId());
+            "}", user, parameterIntegration.getIdentifier());
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

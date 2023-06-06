@@ -1,10 +1,23 @@
 package upc.edu.gessi.tfg.models;
 
-public class RequestParameterIntegration {
+import java.io.Serializable;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+
+public class RequestParameterIntegration implements Serializable {
+
+    @NotBlank
+    @Schema(description = "Source app identifier", example = "com.app.source", required = true)
     private String sourceApp;
+    @NotBlank
+    @Schema(description = "Source feature identifier", example = "addEvent", required = true)
     private String sourceFeature;
+    @NotBlank
+    @Schema(description = "Target app identifier", example = "com.app.target", required = true)
     private String targetApp;
+    @NotBlank
+    @Schema(description = "Target feature identifier", example = "sharePlan", required = true)
     private String targetFeature;
 
     public RequestParameterIntegration(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {

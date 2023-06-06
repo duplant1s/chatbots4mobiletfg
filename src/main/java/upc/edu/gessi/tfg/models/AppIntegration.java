@@ -1,9 +1,19 @@
 package upc.edu.gessi.tfg.models;
 
-public class AppIntegration {
+import java.io.Serializable;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+
+public class AppIntegration implements Serializable {
+
+    @Schema(description = "App integration identifier", example = "com.app.source-com.app.target" , required = false)
     private String identifier;
+    @NotBlank
+    @Schema(description = "Source app identifier", example = "com.app.source", required = true)
     private String sourceApp;
+    @NotBlank
+    @Schema(description = "Target app identifier", example = "com.app.target", required = true)
     private String targetApp;
 
     public AppIntegration(String source, String target) {
@@ -11,11 +21,11 @@ public class AppIntegration {
         this.targetApp = target;
     }
 
-    public String getId() {
+    public String getIdentifier() {
         return this.identifier;
     }
 
-    public void setId(String identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 

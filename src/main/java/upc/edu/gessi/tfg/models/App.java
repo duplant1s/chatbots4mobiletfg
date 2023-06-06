@@ -3,17 +3,39 @@ package upc.edu.gessi.tfg.models;
 import java.io.Serializable;
 import java.util.List;
 
-public class App implements Serializable {
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 
+public class App implements Serializable {
+    @NotBlank
+    @Schema(description = "App name", example = "App name", required = true)
     private String name;
+    @NotBlank
+    @Schema(description = "App identifier", example = "com.app", required = true)
     private String identifier;
+    @NotBlank
+    @Schema(description = "App description", required = true)
     private String description;
+    @NotBlank
+    @Schema(description = "App abstract", required = true)
     private String summary;
+    @NotBlank
+    @Schema(description = "App release notes", required = true)
     private String releaseNotes;
+    @NotBlank
+    @Schema(description = "App category", required = true)
     private AppCategory applicationCategory;
+    @NotBlank
+    @Schema(description = "App date published", required = true)
     private String datePublished;
+    @NotBlank
+    @Schema(description = "App date modified", required = true)
     private String dateModified;
+    @NotBlank
+    @Schema(description = "App software version", required = true)
     private String softwareVersion;
+    @NotBlank
+    @Schema(description = "Features the app exposes", required = true)
     private List<String> features;
 
     public App(String name, String identifier, String description, String summary, String releaseNotes, AppCategory applicationCategory, String datePublished, String dateModified, String softwareVersion, List<String> features) {

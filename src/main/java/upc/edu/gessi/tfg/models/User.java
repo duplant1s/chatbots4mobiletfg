@@ -4,14 +4,29 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+
 public class User implements Serializable {
+    @NotBlank
+    @Schema(description = "User identifier, typically an email", example = "example@gessi.upc.edu", required = true)
     private String identifier;
+    @NotBlank
+    @Schema(description = "User email", example = "example@gessi.upc.edu", required = true)
     private String email;
+    @NotBlank
+    @Schema(description = "User given name", example = "Quim", required = true)
     private String givenName;
+    @NotBlank
+    @Schema(description = "User family name", example = "Motger", required = true)
     private String familyName;
+    @Schema(description = "Apps the user's uses", required = false)
     private List<String> apps;
+    @Schema(description = "User' preferred integrations between two features", required = false)
     private List<String> preferredFeatureIntegrations;
+    @Schema(description = "User' preferred integrations between two parameters", required = false)
     private List<String> preferredParameterIntegrations;
+    @Schema(description = "User' preferred integrations between two apps", required = false)
     private List<String> preferredApps;
 
     public User(String identifier, String email, String givenName, String familyName) {

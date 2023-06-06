@@ -1,7 +1,5 @@
 package upc.edu.gessi.tfg.models;
 
-import javax.print.Doc;
-
 public enum DocumentType {
 
     SUMMARY("summary"),

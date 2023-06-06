@@ -59,32 +59,32 @@ public class UserAppService {
 
     //Preferred Operations
     public void addPreferredAppIntegration(String id, AppIntegration appIntegration) {
-        appIntegration.setId(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+        appIntegration.setIdentifier(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
         appIntegrationRepository.addPreferredAppIntegration(id, appIntegration);    
     }
 
     public void deletePreferredAppIntegration(String id, AppIntegration appIntegration) {
-        appIntegration.setId(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+        appIntegration.setIdentifier(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
         appIntegrationRepository.removePreferredAppIntegration(id, appIntegration);
     }
 
     public void addPreferredFeatureIntegration(String id, FeatureIntegration featureIntegration) {
-        featureIntegration.setId(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
+        featureIntegration.setIdentifier(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
         featureIntegrationRepository.addPreferredFeatureIntegration(id, featureIntegration);
     }
 
     public void deletePreferredFeatureIntegration(String id, FeatureIntegration featureIntegration) {
-        featureIntegration.setId(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
+        featureIntegration.setIdentifier(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
         featureIntegrationRepository.removePreferredFeatureIntegration(id, featureIntegration);
     }
 
     public void addPreferredParameterIntegration(String id, ParameterIntegration parameterIntegration) {
-        parameterIntegration.setId(parameterIntegration.getSourceParameter()+"-"+parameterIntegration.getTargetParameter());
+        parameterIntegration.setIdentifier(parameterIntegration.getSourceParameter()+"-"+parameterIntegration.getTargetParameter());
         parameterIntegrationRepository.addPreferredParameterIntegration(id, parameterIntegration);
     }
 
     public void deletePreferredParameterIntegration(String id, ParameterIntegration parameterIntegration) {
-        parameterIntegration.setId(parameterIntegration.getSourceParameter()+"-"+parameterIntegration.getTargetParameter());
+        parameterIntegration.setIdentifier(parameterIntegration.getSourceParameter()+"-"+parameterIntegration.getTargetParameter());
         parameterIntegrationRepository.removePreferredParameterIntegration(id, parameterIntegration);
     }
 
@@ -119,13 +119,13 @@ public class UserAppService {
     }
 
     public void createAppIntegration(AppIntegration appIntegration) {
-        appIntegration.setId(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+        appIntegration.setIdentifier(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
         appIntegrationRepository.createAppIntegration(appIntegration);
     }
 
     public void updateAppIntegration(String id, AppIntegration appIntegration) {
-        if (appIntegration.getId() == null)
-            appIntegration.setId(id);
+        if (appIntegration.getIdentifier() == null)
+            appIntegration.setIdentifier(id);
         appIntegrationRepository.updateAppIntegration(id, appIntegration);
     }
 

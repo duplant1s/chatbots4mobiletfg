@@ -46,7 +46,7 @@ public class AppIntegrationRepository {
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
                 AppIntegration appIntegration = new AppIntegration(source, target);
-                appIntegration.setId(id);
+                appIntegration.setIdentifier(id);
                 appIntegrations.add(appIntegration);
             }
 
@@ -72,7 +72,7 @@ public class AppIntegrationRepository {
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
                 appIntegration = new AppIntegration(source, target);
-                appIntegration.setId(id);
+                appIntegration.setIdentifier(id);
             }
 
         } catch (Exception e) {
@@ -87,9 +87,9 @@ public class AppIntegrationRepository {
     public void createAppIntegration(AppIntegration appIntegration) {
         ModelBuilder model = new ModelBuilder();
         model.setNamespace("schema", IRIS.root);
-        model.subject("schema:AppIntegration/" + appIntegration.getId())
+        model.subject("schema:AppIntegration/" + appIntegration.getIdentifier())
             .add(RDF.TYPE, IRIS.appIntegration)
-            .add(IRIS.identifier, appIntegration.getId())
+            .add(IRIS.identifier, appIntegration.getIdentifier())
             .add(IRIS.source, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getSourceApp()))
             .add(IRIS.target, IRIS.createCustomIRI(IRIS.mobileApplication+"/"+appIntegration.getTargetApp()));
         
@@ -257,7 +257,7 @@ public class AppIntegrationRepository {
 
     //USER PREFERENCES
     public void addPreferredAppIntegration(String user, AppIntegration appIntegration) {
-        if (getAppIntegration(appIntegration.getId()) == null) {
+        if (getAppIntegration(appIntegration.getIdentifier()) == null) {
             createAppIntegration(appIntegration);
         }
         ModelBuilder model = new ModelBuilder();
@@ -287,7 +287,7 @@ public class AppIntegrationRepository {
                 "?user schema:identifier '%s' ."+ 
                 "?user schema:AppIntegration ?appIntegration ."+
                 "?appIntegration schema:identifier '%s' ."+
-            "}", user, appIntegration.getId());
+            "}", user, appIntegration.getIdentifier());
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();
         }

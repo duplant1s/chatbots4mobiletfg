@@ -60,15 +60,15 @@ public class FeatureService {
 
     public void createFeatureIntegration(FeatureIntegration featureIntegration) {
         featureIntegration.setName(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
-        featureIntegration.setId(featureIntegration.getName());
+        featureIntegration.setIdentifier(featureIntegration.getName());
         featureIntegrationRepository.createFeatureIntegration(featureIntegration);
     }
 
     public void updateFeatureIntegration(String id, FeatureIntegration param) {
         if (param.getName() == null)
             param.setName(param.getSourceFeature()+"-"+param.getTargetFeature());
-        if (param.getId() == null)
-            param.setId(param.getName());
+        if (param.getIdentifier() == null)
+            param.setIdentifier(param.getName());
         featureIntegrationRepository.updateFeatureIntegration(id, param);
     }
 

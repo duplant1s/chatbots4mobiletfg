@@ -139,8 +139,8 @@ public class UserAppService {
     }
 
     //USER STORY #2
-    public List<String> getAppsFromFeature(String user, String feature) {
-        return appIntegrationRepository.getAppsFromFeature(user, feature);
+    public List<String> getAppsFromFeature(String user, String sourceFeature, String feature) {
+        return appIntegrationRepository.getAppsFromFeature(user, sourceFeature, feature);
     }
 
 }

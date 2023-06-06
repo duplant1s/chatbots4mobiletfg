@@ -330,7 +330,6 @@ public class UserAppController {
         return ResponseEntity.noContent().build();
     }
 
-
     //USER STORY #1
     @Tag(name = "User stories", description = "User stories operations")
     @Operation(summary = "USER STORY #1: Request feature integrations from source features and previous user preferences")
@@ -338,13 +337,14 @@ public class UserAppController {
             @ApiResponse(responseCode = "200", description = "Feature integrations' target features retrieved"),
             @ApiResponse(responseCode = "404", description = "There is no user with that id")
     })
-    @GetMapping("/users/{id}/integrations/features/source/{sourceFeature}")
+    @GetMapping("/users/{id}/integrations/features/{sourceFeature}")
     public ResponseEntity<List<String>> requestFeatureIntegration(@PathVariable String id, @PathVariable String sourceFeature) {
         List<String> features = userAppService.requestFeatureIntegration(id, sourceFeature);
         if (features == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(features);
     }
+  
     //USER STORY #2
     @Tag(name = "User stories", description = "User stories operations")
     @Operation(summary = "USER STORY #2: Request app integrations from selected target feature and previous user preferences") 
@@ -352,12 +352,11 @@ public class UserAppController {
             @ApiResponse(responseCode = "200", description = "App integrations' target apps retrieved"),
             @ApiResponse(responseCode = "404", description = "There is no user with that id")
     })
-    @GetMapping("/users/{id}/integrations/apps/feature/{featureId}")
-    public ResponseEntity<List<String>> getAppsFromFeature(@PathVariable String id, @PathVariable String featureId) {
-        List<String> apps = userAppService.getAppsFromFeature(id, featureId);
+    @GetMapping("/users/{id}/integrations/apps/feature/{sourceFeature}/{targetFeature}")
+    public ResponseEntity<List<String>> getAppsFromFeature(@PathVariable String id, @PathVariable String sourceFeature, @PathVariable String targetFeature) {
+        List<String> apps = userAppService.getAppsFromFeature(id, sourceFeature, targetFeature);
         if (apps == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(apps);
     }
-
 }

@@ -124,24 +124,17 @@ public class FeatureIntegrationRepository{
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+
-                "?featureIntegration schema:identifier '%s' ."+
                 "?featureIntegration schema:name ?name ."+
-                "?featureIntegration schema:source ?source ."+
-                "?featureIntegration schema:target ?target"+
             "}\n"+
             "INSERT { \n"+
-                "?featureIntegration schema:identifier '%s' ."+
                 "?featureIntegration schema:name '%s' ."+
-                "?featureIntegration schema:source '%s' ."+
-                "?featureIntegration schema:target '%s'"+
             "}\n"+
             "WHERE { \n"+
                 "?featureIntegration a schema:Action ."+ 
                 "?featureIntegration schema:identifier '%s' ."+ 
                 "?featureIntegration schema:name ?name ."+
-                "?featureIntegration schema:source ?source ."+
-                "?featureIntegration schema:target ?target"+
-            "}", id, updatedFeatureIntegration.getIdentifier(),  updatedFeatureIntegration.getName(), updatedFeatureIntegration.getSourceFeature(), updatedFeatureIntegration.getTargetFeature(), id);
+
+            "}",  updatedFeatureIntegration.getName(), id);
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

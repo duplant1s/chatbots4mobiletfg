@@ -37,8 +37,8 @@ public class FeatureService {
     }
 
     public void updateFeature(String id, Feature feature) {
-        if (feature.getId() == null)
-            feature.setId(id);
+        if (feature.getIdentifier() == null)
+            feature.setIdentifier(id);
         if (feature.getParameters() == null)
             feature.setParameters(null);
         featureRepository.updateFeature(id, feature);
@@ -59,17 +59,15 @@ public class FeatureService {
     }
 
     public void createFeatureIntegration(FeatureIntegration featureIntegration) {
-        featureIntegration.setName(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
-        featureIntegration.setIdentifier(featureIntegration.getName());
+        if (featureIntegration.getIdentifier() == null)
+            featureIntegration.setIdentifier(featureIntegration.getSourceFeature() + "-" + featureIntegration.getTargetFeature());
+        if (featureIntegration.getName() == null)
+            featureIntegration.setName(featureIntegration.getSourceFeature() + "-" + featureIntegration.getTargetFeature());
         featureIntegrationRepository.createFeatureIntegration(featureIntegration);
     }
 
-    public void updateFeatureIntegration(String id, FeatureIntegration param) {
-        if (param.getName() == null)
-            param.setName(param.getSourceFeature()+"-"+param.getTargetFeature());
-        if (param.getIdentifier() == null)
-            param.setIdentifier(param.getName());
-        featureIntegrationRepository.updateFeatureIntegration(id, param);
+    public void updateFeatureIntegration(String id, FeatureIntegration featureIntegration) {
+        featureIntegrationRepository.updateFeatureIntegration(id, featureIntegration);
     }
 
     public void deleteFeatureIntegration(String id) {

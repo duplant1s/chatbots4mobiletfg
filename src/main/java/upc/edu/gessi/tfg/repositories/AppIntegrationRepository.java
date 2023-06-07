@@ -110,19 +110,15 @@ public class AppIntegrationRepository {
             queryString.append("PREFIX schema: <https://schema.org/>\n");
             queryString.append("DELETE { \n");
             queryString.append("?appIntegration a schema:AppIntegration ;\n");
-            queryString.append("schema:source ?source ;\n");
-            queryString.append("schema:target ?target .\n");
+            queryString.append("schema:name ?name ;\n");
             queryString.append("}\n");
             queryString.append("INSERT { \n");
-            queryString.append("?appIntegration a schema:AppIntegration ;\n");
-            queryString.append("schema:source <"+ IRIS.mobileApplication + appIntegration.getSourceApp()+"> ;\n");
-            queryString.append("schema:target <"+ IRIS.mobileApplication + appIntegration.getTargetApp()+"> .\n");
+            queryString.append("?appIntegration schema:name '"+appIntegration.getName()+"' ;\n");
             queryString.append("}\n");
             queryString.append("WHERE { \n");
             queryString.append("?appIntegration a schema:AppIntegration ;\n");
             queryString.append("schema:identifier '"+id+"' ;\n");
-            queryString.append("schema:source ?source ;\n");
-            queryString.append("schema:target ?target .\n");
+            queryString.append("schema:name ?name ;\n");
             queryString.append("}");
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());

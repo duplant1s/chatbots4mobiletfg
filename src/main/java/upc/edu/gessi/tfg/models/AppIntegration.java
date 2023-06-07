@@ -9,6 +9,7 @@ public class AppIntegration implements Serializable {
 
     @Schema(description = "App integration identifier", example = "com.app.source-com.app.target" , required = false)
     private String identifier;
+    private String name;
     @NotBlank
     @Schema(description = "Source app identifier", example = "com.app.source", required = true)
     private String sourceApp;
@@ -43,6 +44,14 @@ public class AppIntegration implements Serializable {
 
     public void SetTargetApp(String targetApp){
         this.targetApp = targetApp;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
     
 }

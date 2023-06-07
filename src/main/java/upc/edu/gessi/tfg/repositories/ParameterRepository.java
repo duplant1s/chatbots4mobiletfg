@@ -127,21 +127,18 @@ public class ParameterRepository {
 
     public void updateParameter(String id, Parameter updatedParameter) {
         try (RepositoryConnection connection = repository.getConnection()) {
-            String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
+            String queryString = "PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+
-            " ?parameter schema:name ?name ; \n"+
+            " ?parameter schema:name ?name . \n"+
             "} \n"+
             "INSERT { \n"+
-            " ?parameter schema:name \'%s\' ; \n"+
+            " ?parameter schema:name '" + updatedParameter.getName() + "' ; \n"+
             "} \n"+
             "WHERE { \n"+
-            " ?parameter schema:identifier \'%s\' ; \n"+
-            " ?parameter a schema:Number . \n"+
-            " UNION { ?parameter a schema:Boolean . } \n"+
-            " UNION { ?parameter a schema:Text . } \n"+
-            " UNION { ?parameter a schema:GeoCoordinates . } \n"+
-            " UNION { ?parameter a schema:ContactPoint . } \n"+
-            "}", updatedParameter.getName(), id);
+            " ?parameter a schema:"+updatedParameter.getType().toString()+" ; \n"+
+            "            schema:identifier '"+id+"' ; \n"+
+            "            schema:name ?name . \n"+
+            "}";
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

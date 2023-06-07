@@ -51,8 +51,7 @@ public class UserAppController {
     }
 
     @Tag(name = "Users CRUD", description = "CRUD operations for users")
-    @Operation(summary = "Create a user",
-            parameters = @Parameter(name = "id", description = "User's id, typically an email", example = "example@essi.upc.edu"))
+    @Operation(summary = "Create a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created"),
             @ApiResponse(responseCode = "409", description = "User already exists")

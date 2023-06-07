@@ -20,6 +20,9 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
+import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate.Param;
+import com.github.jsonldjava.shaded.com.google.common.reflect.Parameter;
+
 import upc.edu.gessi.tfg.models.Feature;
 import upc.edu.gessi.tfg.models.ParameterIntegration;
 import upc.edu.gessi.tfg.utils.IRIS;
@@ -41,10 +44,11 @@ public class ParameterIntegrationRepository {
 
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = "PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?source ?target "+
+            "SELECT ?id ?source ?name ?target "+
             "WHERE { \n"+
                 "?parameterIntegration a schema:PropertyValue ;"+ 
                 "                        schema:identifier ?id ;"+ 
+                "                        schema:alternateName ?name ;"+
                 "                        schema:name ?source ;"+
                 "                        schema:value ?target"+
             "}";
@@ -54,9 +58,13 @@ public class ParameterIntegrationRepository {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String id = bindingSet.getValue("id").stringValue();
+                String name = bindingSet.getValue("name").stringValue();
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
-                parameterIntegrations.add(new ParameterIntegration(id, source, target));
+                ParameterIntegration parameterIntegration = new ParameterIntegration(source, target);
+                parameterIntegration.setIdentifier(id);
+                parameterIntegration.setName(name);
+                parameterIntegrations.add(parameterIntegration);
                 
             }
         } finally {
@@ -71,10 +79,11 @@ public class ParameterIntegrationRepository {
 
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?id ?source ?target "+
+            "SELECT ?id ?source ?name ?target "+
             "WHERE { \n"+
                 "?parameterIntegration a schema:PropertyValue ;"+ 
                 "                      schema:identifier '%s' ;"+ 
+                "                      schema:alternateName ?name ;"+
                 "                      schema:name ?source ;"+
                 "                      schema:value ?target"+
             "}", id);
@@ -84,9 +93,12 @@ public class ParameterIntegrationRepository {
 
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
+                String name = bindingSet.getValue("name").stringValue();
                 String source = bindingSet.getValue("source").stringValue();
                 String target = bindingSet.getValue("target").stringValue();
-                parameterIntegration = new ParameterIntegration(id, source, target);
+                parameterIntegration = new ParameterIntegration(source, target);
+                parameterIntegration.setIdentifier(id);
+                parameterIntegration.setName(name);
             }
         } finally {
             repository.shutDown();
@@ -100,7 +112,8 @@ public class ParameterIntegrationRepository {
         builder.setNamespace("schema", IRIS.root);
         builder.subject("schema:PropertyValue/"+parameterIntegration.getIdentifier())
                 .add(RDF.TYPE, IRIS.parameterIntegration)
-                .add(IRIS.identifier, IRIS.createLiteral(parameterIntegration.getIdentifier()));
+                .add(IRIS.identifier, IRIS.createLiteral(parameterIntegration.getIdentifier()))
+                .add(IRIS.alternateName, IRIS.createLiteral(parameterIntegration.getName()));
                 String parameterType = parameterRepository.getParameter(parameterIntegration.getSourceParameter()).getType().toString();
                 builder.add(IRIS.name, IRIS.createCustomIRI(IRIS.root+parameterType+"/"+parameterIntegration.getSourceParameter()));
                 parameterType = parameterRepository.getParameter(parameterIntegration.getTargetParameter()).getType().toString();
@@ -120,19 +133,16 @@ public class ParameterIntegrationRepository {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
             "DELETE { \n"+
-                "?parameterIntegration schema:name ?source ."+
-                "?parameterIntegration schema:value ?target"+
+                "?parameterIntegration schema:alternateName ?name ." +
             "}\n"+
             "INSERT { \n"+
-                "?parameterIntegration schema:name '%s'. "+
-                "?parameterIntegration schema:value '%s' "+
+                "?parameterIntegration schema:alternateName '%s' .\n "+
             "}\n"+
             "WHERE { \n"+
                 "?parameterIntegration a schema:PropertyValue ."+ 
                 "?parameterIntegration schema:identifier '%s' ."+ 
-                "?parameterIntegration schema:name ?source ."+
-                "?parameterIntegration schema:value ?target"+
-            "}", parameterIntegration.getSourceParameter(), parameterIntegration.getTargetParameter(), id);
+                "?parameterIntegration schema:alternateName ?name ."+
+            "}", parameterIntegration.getName(), id);
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

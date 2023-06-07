@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -44,8 +45,8 @@ public class FeatureRepository {
             "SELECT ?id ?name ?parameter WHERE {\n" +
                 "?feature a schema:DefinedTerm ;" +   
                 " schema:identifier ?id ;" +
-                " schema:name ?name ; " +
-                " schema:hasPart ?parameter . " +
+                " schema:name ?name . " +
+                " OPTIONAL { ?feature schema:hasPart ?parameter } " +
             "}";
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
@@ -55,13 +56,18 @@ public class FeatureRepository {
                 BindingSet bindingSet = result.next();
                 String id = bindingSet.getValue("id").stringValue();
                 String name = bindingSet.getValue("name").stringValue();
-                String parameter = bindingSet.getValue("parameter").stringValue();
+                Value parameter = bindingSet.getValue("parameter");
                 Feature feature;
                 if (featureMap.containsKey(name)) {
                     feature = featureMap.get(name);
-                    feature.getParameters().add(parameter);
+                    if (parameter != null && !feature.getParameters().contains(parameter.toString()))
+                        feature.getParameters().add(parameter.toString());
                 } else {
-                    feature = new Feature(id, name, new ArrayList<String>(Arrays.asList(parameter)));
+                    if (parameter != null) {
+                        feature = new Feature(id, name, new ArrayList<String>(Arrays.asList(parameter.toString())));
+                    } else {
+                        feature = new Feature(id, name, new ArrayList<String>());
+                    }
                     featureMap.put(name, feature);
                 }
             }
@@ -83,7 +89,7 @@ public class FeatureRepository {
                 "?feature a schema:DefinedTerm ;"+ 
                 "       schema:identifier '"+id+"' ;"+ 
                 "       schema:name ?name ;" + 
-                "       schema:hasPart ?parameter }";
+                "OPTIONAL { ?feature schema:hasPart ?parameter } }";
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
             TupleQueryResult result = tupleQuery.evaluate();
@@ -92,9 +98,11 @@ public class FeatureRepository {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 String name = bindingSet.getValue("name").stringValue();
-                String parameter = bindingSet.getValue("parameter").stringValue();
-                if (!parameters.contains(parameter))
-                    parameters.add(parameter);
+                Value parameter = bindingSet.getValue("parameter");
+                if (parameter != null) {
+                    if (!parameters.contains(parameter.toString()))
+                        parameters.add(parameter.toString());
+                }
                 feature = new Feature(id, name, parameters);
             }
         } finally {
@@ -107,9 +115,9 @@ public class FeatureRepository {
     public void createFeature(Feature feature) {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.setNamespace("schema", "https://schema.org/");
-        modelBuilder.subject("schema:DefinedTerm/"+feature.getId())
+        modelBuilder.subject("schema:DefinedTerm/"+feature.getIdentifier())
             .add(RDF.TYPE, IRIS.feature)
-            .add(IRIS.identifier, IRIS.createLiteral(feature.getId()))
+            .add(IRIS.identifier, IRIS.createLiteral(feature.getIdentifier()))
             .add(IRIS.name, IRIS.createLiteral(feature.getName()));
         Iterator<String> it = feature.getParameters().iterator();
         while (it.hasNext()) {
@@ -152,8 +160,8 @@ public class FeatureRepository {
             queryString.append("WHERE { \n");
             queryString.append("?feature a schema:DefinedTerm ; \n");
             queryString.append("         schema:identifier '"+id+"' ; \n");
-            queryString.append("         schema:name ?name ; \n");
-            queryString.append("         schema:hasPart ?parameter . \n");
+            queryString.append("         schema:name ?name . \n");
+            queryString.append("OPTIONAL{?feature schema:hasPart ?parameter} \n");
             queryString.append("} \n");
 
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString.toString());

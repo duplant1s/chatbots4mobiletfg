@@ -126,6 +126,8 @@ public class UserAppService {
     public void updateAppIntegration(String id, AppIntegration appIntegration) {
         if (appIntegration.getIdentifier() == null)
             appIntegration.setIdentifier(id);
+        if (appIntegration.getName() == null)
+            appIntegration.setName(id);
         appIntegrationRepository.updateAppIntegration(id, appIntegration);
     }
 

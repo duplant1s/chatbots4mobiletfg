@@ -65,6 +65,10 @@ public class ParameterService {
     }
 
     public void updateParameterIntegration(String id, ParameterIntegration param) {
+        if (param.getIdentifier() == null)
+            param.setIdentifier(id);
+        if (param.getName() == null)
+            param.setName(id);
         parameterIntegrationRepository.updateParameterIntegration(id, param);
     }
 

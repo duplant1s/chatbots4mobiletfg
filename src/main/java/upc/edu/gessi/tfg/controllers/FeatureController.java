@@ -60,7 +60,7 @@ public class FeatureController {
     })
     @PostMapping
     public ResponseEntity<Feature> createFeature(@RequestBody Feature feature) {
-        if (featureService.getFeatureById(feature.getId()) != null)
+        if (featureService.getFeatureById(feature.getIdentifier()) != null)
             return ResponseEntity.status(409).build();
         featureService.createFeature(feature);
         return ResponseEntity.created(null).build();

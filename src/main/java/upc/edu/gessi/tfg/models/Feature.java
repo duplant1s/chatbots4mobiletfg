@@ -13,8 +13,7 @@ public class Feature implements Serializable {
     @NotBlank
     @Schema(description = "Feature name", example = "Plan a meeting", required = true)
     private String name;
-    @NotBlank
-    @Schema(description = "Feature parameters", example = "[\"meeting-name\", \"meeting-date\"]", required = true)
+    @Schema(description = "Feature parameters", example = "[\"meeting-name\", \"meeting-date\"]", required = false)
     private List<String> parameters;
 
     public Feature(String identifier, String name, List<String> parameters) {
@@ -23,11 +22,11 @@ public class Feature implements Serializable {
         this.parameters = parameters;
     }
 
-    public String getId() {
+    public String getIdentifier() {
         return identifier;
     }
 
-    public void setId(String identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -45,13 +44,5 @@ public class Feature implements Serializable {
 
     public void setParameters(List<String> parameters) {
         this.parameters = parameters;
-    }
-
-    public void deleteParameter(String parameter_id) {
-        this.parameters.remove(parameter_id);
-    }
-
-    public void addParameter(String parameter_id) {
-        this.parameters.add(parameter_id);
     }
 }

@@ -47,6 +47,7 @@ public class IRIS {
 
     //PARAMETER INTEGRATION IRIs
     public static final IRI parameterIntegration = valueFactory.createIRI(root+"PropertyValue");
+    public static final IRI alternateName = valueFactory.createIRI(root+"alternateName");
 
     //APP INTEGRATION IRIs
     public static final IRI appIntegration = valueFactory.createIRI(root+"AppIntegration");

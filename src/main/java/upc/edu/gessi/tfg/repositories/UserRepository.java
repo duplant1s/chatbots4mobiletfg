@@ -147,10 +147,12 @@ public class UserRepository  {
                         prefApps.add(prefApp);
                 }
             }
-            user.setApps(apps);
-            user.setPreferredFeatureIntegrations(prefFeatureIntegrations);
-            user.setPreferredParameterIntegrations(prefParamIntIntegrations);
-            user.setPreferredApps(prefApps);
+            if (user != null) {
+                user.setApps(apps);
+                user.setPreferredFeatureIntegrations(prefFeatureIntegrations);
+                user.setPreferredParameterIntegrations(prefParamIntIntegrations);
+                user.setPreferredApps(prefApps);
+            }
 
         } finally {
             repository.shutDown();

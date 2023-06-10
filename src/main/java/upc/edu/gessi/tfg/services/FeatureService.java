@@ -59,10 +59,6 @@ public class FeatureService {
     }
 
     public void createFeatureIntegration(FeatureIntegration featureIntegration) {
-        if (featureIntegration.getIdentifier() == null)
-            featureIntegration.setIdentifier(featureIntegration.getSourceFeature() + "-" + featureIntegration.getTargetFeature());
-        if (featureIntegration.getName() == null)
-            featureIntegration.setName(featureIntegration.getSourceFeature() + "-" + featureIntegration.getTargetFeature());
         featureIntegrationRepository.createFeatureIntegration(featureIntegration);
     }
 

@@ -105,7 +105,7 @@ public class UserAppController {
             @ApiResponse(responseCode = "404", description = "There is no user with that id")
     })
     @PostMapping("/users/{id}/integrations/apps")
-    public ResponseEntity<User> addPreferredPAppIntegration(@PathVariable String id, @RequestBody AppIntegration appIntegration) {
+    public ResponseEntity<User> addPreferredAppIntegration(@PathVariable String id, @RequestBody AppIntegration appIntegration) {
         if (userAppService.getUserById(id) == null)
             return ResponseEntity.notFound().build();
         userAppService.addPreferredAppIntegration(id, appIntegration);
@@ -338,6 +338,8 @@ public class UserAppController {
     })
     @GetMapping("/users/{id}/integrations/features/{sourceFeature}")
     public ResponseEntity<List<String>> requestFeatureIntegration(@PathVariable String id, @PathVariable String sourceFeature) {
+        if (userAppService.getUserById(id) == null)
+            return ResponseEntity.notFound().build();
         List<String> features = userAppService.requestFeatureIntegration(id, sourceFeature);
         if (features == null)
             return ResponseEntity.notFound().build();
@@ -353,6 +355,8 @@ public class UserAppController {
     })
     @GetMapping("/users/{id}/integrations/apps/feature/{sourceFeature}/{targetFeature}")
     public ResponseEntity<List<String>> getAppsFromFeature(@PathVariable String id, @PathVariable String sourceFeature, @PathVariable String targetFeature) {
+        if (userAppService.getUserById(id) == null)
+            return ResponseEntity.notFound().build();
         List<String> apps = userAppService.getAppsFromFeature(id, sourceFeature, targetFeature);
         if (apps == null)
             return ResponseEntity.notFound().build();

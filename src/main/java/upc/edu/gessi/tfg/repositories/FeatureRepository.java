@@ -178,7 +178,7 @@ public class FeatureRepository {
     public void deleteFeature(String id) {
         try(RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "DELETE WHERE { ?feature a schema:DefinedTerm ; schema:name '%s' ; ?p ?o }", id);
+            "DELETE WHERE { ?feature a schema:DefinedTerm ; schema:identifier '%s' ; ?p ?o }", id);
            
             Update update = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
             update.execute();

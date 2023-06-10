@@ -58,7 +58,7 @@ public class ParameterController {
     })
     @PostMapping
     public ResponseEntity<Parameter> createParameter(@RequestBody Parameter param) {
-        if (parameterService.getParameter(param.getName()) != null)
+        if (parameterService.getParameter(param.getIdentifier()) != null)
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         parameterService.createParameter(param);
         return ResponseEntity.created(null).build();
@@ -87,6 +87,8 @@ public class ParameterController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Parameter> deleteParameter(@PathVariable String id) {
+        if (parameterService.getParameter(id) == null)
+            return ResponseEntity.notFound().build();
         parameterService.deleteParameter(id);
         return ResponseEntity.noContent().build();
     }
@@ -126,6 +128,11 @@ public class ParameterController {
     })
     @PostMapping("/integrations")
     public ResponseEntity<ParameterIntegration> createParameterIntegration(@RequestBody ParameterIntegration param) {
+        if (param.getIdentifier() == null) 
+            param.setIdentifier(param.getSourceParameter()+"-"+param.getTargetParameter());
+        if (param.getName() == null) 
+            param.setName(param.getSourceParameter()+"-"+param.getTargetParameter());
+            
         if (parameterService.getParameterIntegration(param.getIdentifier()) != null)
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         parameterService.createParameterIntegration(param);

@@ -88,7 +88,7 @@ public class FeatureController {
         @ApiResponse(responseCode = "404", description = "Feature not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Feature> deleteUser(@PathVariable String id) {
+    public ResponseEntity<Feature> deleteFeature(@PathVariable String id) {
         if (featureService.getFeatureById(id) == null)
             return ResponseEntity.notFound().build();
         featureService.deleteFeature(id);
@@ -130,6 +130,11 @@ public class FeatureController {
     })
     @PostMapping("/integrations")
     public ResponseEntity<FeatureIntegration> createFeatureIntegration(@RequestBody FeatureIntegration featureIntegration) {
+        if (featureIntegration.getIdentifier() == null)
+            featureIntegration.setIdentifier(featureIntegration.getSourceFeature() + "-" + featureIntegration.getTargetFeature());
+        if (featureIntegration.getName() == null)
+            featureIntegration.setName(featureIntegration.getSourceFeature() + "-" + featureIntegration.getTargetFeature());
+
         if (featureService.getFeatureIntegration(featureIntegration.getIdentifier()) != null)
             return ResponseEntity.status(409).build();
         featureService.createFeatureIntegration(featureIntegration);

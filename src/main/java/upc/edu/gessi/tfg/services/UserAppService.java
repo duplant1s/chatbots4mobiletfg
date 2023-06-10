@@ -59,7 +59,10 @@ public class UserAppService {
 
     //Preferred Operations
     public void addPreferredAppIntegration(String id, AppIntegration appIntegration) {
-        appIntegration.setIdentifier(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+        if (appIntegration.getIdentifier() == null)
+            appIntegration.setIdentifier(appIntegration.getSourceApp()+"-"+appIntegration.getTargetApp());
+        if (appIntegration.getName() == null)
+            appIntegration.setName(appIntegration.getIdentifier());
         appIntegrationRepository.addPreferredAppIntegration(id, appIntegration);    
     }
 
@@ -69,7 +72,10 @@ public class UserAppService {
     }
 
     public void addPreferredFeatureIntegration(String id, FeatureIntegration featureIntegration) {
-        featureIntegration.setIdentifier(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
+        if (featureIntegration.getIdentifier() == null)
+            featureIntegration.setIdentifier(featureIntegration.getSourceFeature()+"-"+featureIntegration.getTargetFeature());
+        if (featureIntegration.getName() == null)
+            featureIntegration.setName(featureIntegration.getIdentifier());
         featureIntegrationRepository.addPreferredFeatureIntegration(id, featureIntegration);
     }
 
@@ -79,7 +85,10 @@ public class UserAppService {
     }
 
     public void addPreferredParameterIntegration(String id, ParameterIntegration parameterIntegration) {
-        parameterIntegration.setIdentifier(parameterIntegration.getSourceParameter()+"-"+parameterIntegration.getTargetParameter());
+        if (parameterIntegration.getIdentifier() == null)
+            parameterIntegration.setIdentifier(parameterIntegration.getSourceParameter()+"-"+parameterIntegration.getTargetParameter());
+        if (parameterIntegration.getName() == null)
+            parameterIntegration.setName(parameterIntegration.getIdentifier());
         parameterIntegrationRepository.addPreferredParameterIntegration(id, parameterIntegration);
     }
 

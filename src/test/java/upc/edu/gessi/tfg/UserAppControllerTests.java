@@ -56,7 +56,9 @@ public class UserAppControllerTests {
     @ParameterizedTest
     @Order(1)
     @CsvSource({
+        //a test user is created, it should return 201
         "testingID, 201 CREATED",
+        //an already existing user is trying to be created, it should return 409
         "quim-motger@gessi.upc.edu, 409 CONFLICT"
     })
     public void testCreateUser(String username, String expectedStatus){
@@ -68,7 +70,8 @@ public class UserAppControllerTests {
     @Test
     @Order(2)
     public void testGetAllUsers() throws Exception {
-        ResponseEntity<List<User>> response = restTemplate.exchange(baseUrl + "/users", HttpMethod.GET, null, new ParameterizedTypeReference<List<User>>() {});
+        ResponseEntity<List<User>> response = restTemplate.exchange(
+            baseUrl + "/users", HttpMethod.GET, null,new ParameterizedTypeReference<List<User>>() {});
         List<User> users = response.getBody();
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(users);
@@ -78,7 +81,9 @@ public class UserAppControllerTests {
     @ParameterizedTest
     @Order(3)
     @CsvSource({
+        //an existing user is trying to be accessed, it should return 200
         "testingID,200 OK",
+        //a non existing user is trying to be accessed, it should return 404
         "notExistingId,404 NOT_FOUND"
     })
     public void testGetUserById(String id, String expectedStatus) {

@@ -16,7 +16,7 @@ public enum AppCategory {
     GPS,
     @JsonProperty("Weather")
     WEATHER,
-    @JsonProperty("Air quality")
+    @JsonProperty("Air Quality")
     AIR_QUALITY,
     @JsonProperty("Instant Messaging")
     INSTANT_MESSAGING,

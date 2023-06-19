@@ -187,9 +187,9 @@ public class FeatureIntegrationRepository{
                 "?user schema:Action ?preferredIntegration ."+ 
                 "?preferredIntegration a schema:Action ."+ 
                 "?preferredIntegration schema:source ?sourceFeature ."+ 
-                "?sourceFeature schema:name '%s' ."+ 
+                "?sourceFeature schema:identifier '%s' ."+ 
                 "?preferredIntegration schema:target ?targetFeature ."+ 
-                "?targetFeature schema:name ?targetName ."+
+                "?targetFeature schema:identifier ?targetName ."+
             "}", userID, sourceFeature);
             
             TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
@@ -213,12 +213,12 @@ public class FeatureIntegrationRepository{
                 "?appIntegration a schema:AppIntegration ."+
                 "?appIntegration schema:source ?sourceApp ."+
                 "?sourceApp a schema:MobileApplication ."+
-                "?sourceApp schema:DefinedTerm ?sourceFeature ."+
-                "?sourceFeature schema:name '%s' ."+
+                "?sourceApp schema:keywords ?sourceFeature ."+
+                "?sourceFeature schema:identifier '%s' ."+
                 "?appIntegration schema:target ?targetApp ."+
                 "?targetApp a schema:MobileApplication ."+
-                "?targetApp schema:DefinedTerm ?targetFeature ."+
-                "?targetFeature schema:name ?targetName ."+
+                "?targetApp schema:keywords ?targetFeature ."+
+                "?targetFeature schema:identifier ?targetName ."+
             "}", userID, sourceFeature);
 
             tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
@@ -240,10 +240,10 @@ public class FeatureIntegrationRepository{
                 "?featureIntegration a schema:Action ."+ 
                 "?featureIntegration schema:source ?source ."+
                 "?source a schema:DefinedTerm;"+
-                    "schema:name '%s' ."+
+                    "schema:identifier '%s' ."+
                 "?featureIntegration schema:target ?target."+
                 "?target a schema:DefinedTerm;"+
-                    "schema:name ?targetName ."+
+                    "schema:identifier ?targetName ."+
             "}", sourceFeature);
 
             tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);

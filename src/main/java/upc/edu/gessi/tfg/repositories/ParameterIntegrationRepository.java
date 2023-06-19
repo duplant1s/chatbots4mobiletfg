@@ -178,7 +178,7 @@ public class ParameterIntegrationRepository {
     public List<List<Object>> requestParameterIntegration(String sourceApp, String sourceFeature, String targetApp, String targetFeature) {
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?sourceParam ?targetParam\n" +
+            "SELECT DISTINCT ?sourceParam ?targetParam\n" +
             "WHERE {\n" +
               // Define the source app and feature
               "?sourceApp a schema:MobileApplication;"+
@@ -186,7 +186,7 @@ public class ParameterIntegrationRepository {
               "           schema:name ?sourceAppName;"+
               "           schema:keywords ?sourceFeature."+
               "  ?sourceFeature a schema:DefinedTerm;" +
-              "                 schema:name '%s'." +
+              "                 schema:identifier '%s'." +
                 
               // Define the target app and feature
               "   ?targetApp a schema:MobileApplication;"+
@@ -194,7 +194,7 @@ public class ParameterIntegrationRepository {
               "           schema:name ?targetAppName;"+
               "           schema:keywords ?targetFeature."+
               "  ?targetFeature a schema:DefinedTerm;"+
-              "                 schema:name '%s'."+
+              "                 schema:identifier '%s'."+
                 
               // Find the parameter integrations between the source and target features
               "?sourceFeature schema:hasPart ?sourceParam."+
@@ -233,20 +233,20 @@ public class ParameterIntegrationRepository {
         List<String> paramsWithoutIntegration = new ArrayList<>();
         try (RepositoryConnection connection = repository.getConnection()) {
             String queryString = String.format("PREFIX schema: <https://schema.org/>\n" +
-            "SELECT ?targetParamId\n" +
+            "SELECT DISTINCT ?targetParamId\n" +
             "WHERE {"+
                 "?sourceApp a schema:MobileApplication;"+
                 "           schema:identifier '%s';"+
                 "           schema:keywords ?sourceFeature ."+
                 "?sourceFeature a schema:DefinedTerm;"+
-                "         schema:name '%s'."+
+                "         schema:identifier '%s'."+
                 "?sourceFeature schema:hasPart ?sourceParam."+
                 "?sourceParam schema:identifier ?sourceParamId."+
                 "?targetApp a schema:MobileApplication;"+
                 "           schema:identifier '%s';"+
                 "           schema:keywords ?targetFeature ."+
                 "?targetFeature a schema:DefinedTerm;"+
-                "         schema:name '%s'."+
+                "         schema:identifier '%s'."+
                 "?targetFeature schema:hasPart ?targetParam."+
                 "?targetParam schema:identifier ?targetParamId."+
                 "?paramInt a schema:PropertyValue;"+

@@ -158,7 +158,7 @@ public class AppIntegrationRepository {
                 "?app schema:name ?appName ."+
                 "?app schema:keywords ?feature ."+
                 "    ?feature a schema:DefinedTerm;"+
-                "       schema:name '%s'"+
+                "       schema:identifier '%s'"+
             "}", targetFeature);
 
             TupleQuery tupleQuery = connection.prepareTupleQuery(queryString);
@@ -180,7 +180,7 @@ public class AppIntegrationRepository {
                 "?app schema:name ?appName ."+
                 "?app schema:keywords ?feature ."+
                 "    ?feature a schema:DefinedTerm;"+
-                "       schema:name '%s'"+
+                "       schema:identifier '%s'"+
             "}", user, targetFeature);
 
             tupleQuery = connection.prepareTupleQuery(queryString);
@@ -194,7 +194,7 @@ public class AppIntegrationRepository {
 
             //HIGHEST PRIORITY: USER PREFERRED-APPS THAT HAVE THE FEATURE
             queryString = String.format("PREFIX schema: <https://schema.org/>\n"+
-            "SELECT ?appName WHERE {"+
+            "SELECT DISTINCT ?appName WHERE {"+
                 "{ "+
                 "?user a schema:Person ."+
                 "?user schema:identifier '%s' ."+
@@ -205,7 +205,7 @@ public class AppIntegrationRepository {
                 "?app schema:name ?appName ."+
                 "?app schema:keywords ?feature ."+
                 "?feature a schema:DefinedTerm;"+
-                "schema:name '%s'"+
+                "schema:identifier '%s'"+
                 "} "+
                 "UNION "+
                 "{ "+
@@ -218,7 +218,7 @@ public class AppIntegrationRepository {
                 "?app schema:name ?appName ."+
                 "?app schema:keywords ?feature ."+
                 "?feature a schema:DefinedTerm;"+
-                "schema:name '%s'"+
+                "schema:identifier '%s'"+
                 "}"+
             "}", user, sourceFeature, user, targetFeature);
 
